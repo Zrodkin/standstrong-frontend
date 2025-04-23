@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 
 // --- Import Hero image ---
 import heroImageFromFile from '../assets/class-hero-image.jpeg';
+const heroBackgroundImage = heroImageFromFile; // --- Assign Hero image ---
 
 // --- Import City images ---
 import bostonImage from '../assets/boston-skyline.jpeg';
@@ -18,10 +19,14 @@ import actionShot1 from '../assets/class-action-shot1.jpeg';
 import actionShot2 from '../assets/class-action-shot2.jpeg';
 import actionShot3 from '../assets/class-action-shot3.jpeg';
 
+// --- Import Site Logo (NEW) ---
+import siteLogo from '../assets/standstrong-logo-white.svg'; // Assuming this is the correct path
+
+// --- Import Icons ---
 import { FiUsers, FiShield, FiAward, FiZap } from 'react-icons/fi';
 
-// --- Assign Hero image ---
-const heroBackgroundImage = heroImageFromFile;
+
+
 
 // --- Map city names to imported images ---
 const cityImageMap = {
@@ -57,17 +62,53 @@ const HomePage = () => {
     return (
         <div className="bg-gradient-to-br from-sky-100 to-gray-100">
 
-            {/* === 1. Hero Section === */}
-            <section className="relative bg-cover bg-center h-[80vh]" style={{ backgroundImage: `url(${heroBackgroundImage})` }}>
-                <div className="absolute inset-0 bg-black/60"></div>
-                <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-6">
-                    <div className="space-y-6 md:space-y-8">
-                        <motion.h1 className="text-4xl md:text-6xl font-bold" variants={heroItemVariants(0)} initial="hidden" animate="visible">Stand Strong</motion.h1>
-                        <motion.p className="mt-2 text-xl md:text-2xl max-w-2xl" variants={heroItemVariants(0.2)} initial="hidden" animate="visible">Empowering through self-defense classes in your city</motion.p>
-                        <motion.div variants={heroItemVariants(0.4)} initial="hidden" animate="visible" className="mt-8">
-                            <Link to="/classes" className="px-10 py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-lg shadow-md hover:shadow-lg">Find Classes</Link>
-                        </motion.div>
-                    </div>
+            {/* === 1. Hero Section: Logo replaces H1 === */}
+            <section
+                className="relative bg-cover bg-center h-[70vh]" // Kept reduced height
+                style={{ backgroundImage: `url(${heroBackgroundImage})` }}
+            >
+                <div className="absolute inset-0 bg-black/60"></div> {/* Overlay */}
+                <div className="relative z-10 flex flex-col items-center justify-start text-white text-center pt-48 px-6">
+
+                    {/* Replaced H1 with Logo Image */}
+                    <motion.div
+                         variants={heroItemVariants(0)}
+                         initial="hidden"
+                         animate="visible"
+                    >
+                        <img
+                            src={siteLogo}
+                            alt="Stand Strong Logo"
+                            // Adjust height as needed, w-auto keeps aspect ratio
+                            className="h-16 md:h-20 w-auto"
+                         />
+                    </motion.div>
+
+                    {/* Tagline: Added smaller margin-top */}
+                    <motion.p
+                        className="mt-3 text-xl md:text-2xl max-w-2xl" // Adjusted margin slightly (mt-3)
+                        variants={heroItemVariants(0.2)}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        Empowering through self-defense classes in your city
+                    </motion.p>
+
+                    {/* Button Container: Added margin-top back */}
+                    <motion.div
+                        variants={heroItemVariants(0.4)}
+                        initial="hidden"
+                        animate="visible"
+                        className="mt-14"
+                    >
+                        <Link
+                            to="/classes"
+                            className="px-10 py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-lg shadow-md hover:shadow-lg"
+                        >
+                            Find Classes
+                        </Link>
+                    </motion.div>
+
                 </div>
             </section>
 

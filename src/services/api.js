@@ -1,36 +1,34 @@
-// client/src/services/api.js
 import axios from 'axios';
 
-// Create axios instance with base URL using Vite's environment variables
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Use Vite's environment variable for API URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // Log the API URL for debugging
 console.log('Using API URL:', API_URL);
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: `${API_URL}/api`, // <- attaches "/api" to base URL
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add a request interceptor to add auth token to requests
+// Add a request interceptor to include the auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-        config.headers.Authorization = "Bearer " + token;
+      config.headers.Authorization = 'Bearer ' + token;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Add a response interceptor to handle common errors
+// Add a response interceptor to handle auth failures
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized error (expired token)
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

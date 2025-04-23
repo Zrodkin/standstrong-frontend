@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiMenu, FiX, FiUser, FiLogOut, FiHome, FiBookOpen, FiGrid, FiActivity } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext'; // Adjust path if
-
+import siteLogo from '../assets/ss-newlogo.svg';
 
 const MainLayout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -53,19 +53,20 @@ const MainLayout = ({ children }) => {
 
 
     return (
-        // Using slate for a slightly warmer feel than gray-50
         <div className="min-h-screen bg-slate-50 flex flex-col">
-            {/* Navigation Header */}
-            <header className="bg-white shadow-sm sticky top-0 z-30">
-                {/* Added nav inside for semantics */}
-                <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main Navigation">
-                    <div className="flex justify-between h-16">
-                        {/* Left side: Logo and Desktop Nav */}
-                        <div className="flex items-center"> {/* Added items-center */}
-                            <Link to="/" className="flex-shrink-0 flex items-center gap-2" aria-label="Stand Strong Home"> {/* Added gap */}
-                                {/* Replace with your actual logo */}
-                                <FiActivity className="h-8 w-auto text-primary-600" />
-                                <span className="text-primary-700 font-bold text-xl">Stand Strong</span>
+          {/* Navigation Header */}
+          <header className="bg-white shadow-sm sticky top-0 z-30">
+            <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main Navigation">
+              <div className="flex justify-between h-16">
+                {/* Left side: Logo and Desktop Nav */}
+                <div className="flex items-center">
+                  {/* Logo replacement */}
+                  <Link to="/" className="flex-shrink-0">
+                    <img src={siteLogo} alt="Stand Strong Logo" className="h-8" /> 
+                  </Link>
+                  {/* <div className="flex-shrink-0 flex items-center gap-2" aria-label="Stand Strong Home">
+                    <FiActivity className="h-8 w-auto text-primary-600" />
+                    <span className="text-primary-700 font-bold text-xl">Stand Strong</span>
                             </Link>
                             {/* Desktop Navigation Links */}
                             <div className="hidden sm:ml-6 sm:flex sm:space-x-4"> {/* Reduced space */}
