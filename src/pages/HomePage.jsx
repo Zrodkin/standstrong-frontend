@@ -134,7 +134,7 @@ const HomePage = () => {
             <section className="py-12 md:py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                      {/* Adjusted bottom margin */}
-                    <div className="lg:text-center mb-10 md:mb-12">
+                    <div className="text-center mb-10 md:mb-12">
                         <h2 className="text-base text-indigo-600 font-semibold tracking-wide uppercase">Why Stand Strong</h2>
                         {/* Adjusted text size for mobile */}
                         <p className="mt-2 text-2xl leading-8 font-bold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">Empowerment Through Skill</p>
