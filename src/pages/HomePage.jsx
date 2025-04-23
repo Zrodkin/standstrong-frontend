@@ -24,95 +24,81 @@ import siteLogo from '../assets/standstrong-logo-white.svg'; // Assuming this is
 // --- Import Icons ---
 import { FiUsers, FiShield, FiAward, FiZap } from 'react-icons/fi';
 
-
-// --- Map city names to imported images ---
 const cityImageMap = {
-    'Boston': bostonImage,
-    'New York': newyorkImage,
-    'Chicago': chicagoImage,
-    'Los Angeles': laImage,
-    'Las Vegas': lasvegasImage,
+  Boston: bostonImage,
+  'New York': newyorkImage,
+  Chicago: chicagoImage,
+  'Los Angeles': laImage,
+  'Las Vegas': lasvegasImage,
 };
-const defaultCityImage = '/img/placeholder-city.jpg'; // Fallback
-
-// --- Use imported gallery images ---
+const defaultCityImage = '/img/placeholder-city.jpg';
 const galleryImages = [actionShot1, actionShot2, actionShot3];
 
-// --- Data for About section ---
 const aboutFeatures = [
-    { Icon: FiShield, title: "Classes for Everyone", text: "Tailored for all ages, genders, and experience levels." },
-    { Icon: FiAward, title: "Expert Instructors", text: "Certified professionals passionate about teaching effective techniques." },
-    { Icon: FiUsers, title: "Supportive Community", text: "Join a community committed to personal safety and growth." },
-    { Icon: FiZap, title: "Practical Skills", text: "Learn techniques that work in real-world situations, focusing on practicality." }
+  { Icon: FiShield, title: 'Classes for Everyone', text: 'Tailored for all ages, genders, and experience levels.' },
+  { Icon: FiAward, title: 'Expert Instructors', text: 'Certified professionals passionate about teaching effective techniques.' },
+  { Icon: FiUsers, title: 'Supportive Community', text: 'Join a community committed to personal safety and growth.' },
+  { Icon: FiZap, title: 'Practical Skills', text: 'Learn techniques that work in real-world situations, focusing on practicality.' },
 ];
-// --- End Sample Data ---
 
 const HomePage = () => {
-    // --- Animation Variants ---
-    const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
-    const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.5 } } };
-    const heroItemVariants = (delay = 0) => ({ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.7, delay: delay } } });
-    // --- End Animation Variants ---
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  };
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  };
+  const heroItemVariants = (delay = 0) => ({
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.7, delay } },
+  });
 
-    const displayCities = ['Boston', 'New York', 'Chicago', 'Los Angeles', 'Las Vegas'];
+  const displayCities = ['Boston', 'New York', 'Chicago', 'Los Angeles', 'Las Vegas'];
 
-    return (
-        // Overall page gradient
-        <div className="bg-gradient-to-br from-sky-100 to-gray-100">
+  return (
+    <div className="bg-gradient-to-br from-sky-100 to-gray-100">
 
-            {/* === 1. Hero Section === */}
-            <section
-  className="relative bg-cover bg-[center_top] sm:bg-center h-[50vh] sm:h-[65vh] md:h-[70vh]"
-  style={{ backgroundImage: `url(${heroBackgroundImage})` }}
+ {/* === 1. Hero Section (Rewritten with <img>) === */}
+ <section className="relative h-[50vh] sm:h-[65vh] md:h-[70vh]">
+      <img
+  src={heroBackgroundImage}
+  alt="Stand Strong Hero"
+  className="absolute inset-0 w-full h-full object-cover object-top sm:object-center"
+/>
+        <div className="absolute inset-0 bg-black/60"></div>
+
+        <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4 sm:px-6">
+          <motion.div variants={heroItemVariants(0)} initial="hidden" animate="visible">
+            <img src={siteLogo} alt="Stand Strong Logo" className="h-14 sm:h-16 md:h-20 w-auto" />
+          </motion.div>
+          <motion.p
+  className="mt-2 sm:mt-4 text-lg sm:text-xl md:text-2xl max-w-xl sm:max-w-2xl"
+  variants={heroItemVariants(0.2)}
+  initial="hidden"
+  animate="visible"
 >
-                <div className="absolute inset-0 bg-black/60"></div> {/* Overlay */}
-                 {/* Adjusted top padding for mobile (pt-32), kept pt-48 for larger screens */}
-                <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4 sm:px-6">
+  Empowering through self-defense classes in your city
+</motion.p>
+          <motion.div
+            variants={heroItemVariants(0.4)}
+            initial="hidden"
+            animate="visible"
+            className="mt-8 md:mt-14"
+          >
+            <Link
+              to="/classes"
+              className="px-8 py-3 sm:px-10 sm:py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-base sm:text-lg shadow-md hover:shadow-lg"
+            >
+              Find Classes
+            </Link>
+          </motion.div>
+        </div>
+      </section>
 
-                    {/* Logo Image */}
-                    <motion.div
-                        variants={heroItemVariants(0)}
-                        initial="hidden"
-                        animate="visible"
-                    >
-                        <img
-                            src={siteLogo}
-                            alt="Stand Strong Logo"
-                            // Base height for mobile, increases on medium screens
-                            className="h-14 sm:h-16 md:h-20 w-auto"
-                        />
-                    </motion.div>
 
-                    {/* Tagline */}
-                    <motion.p
-                        // Base text size for mobile, increases on medium screens. Adjusted top margin.
-                        className="mt-4 text-lg sm:text-xl md:text-2xl max-w-xl sm:max-w-2xl"
-                        variants={heroItemVariants(0.2)}
-                        initial="hidden"
-                        animate="visible"
-                    >
-                        Empowering through self-defense classes in your city
-                    </motion.p>
 
-                    {/* Button Container */}
-                    <motion.div
-                        variants={heroItemVariants(0.4)}
-                        initial="hidden"
-                        animate="visible"
-                        // Adjusted top margin for mobile vs larger screens
-                        className="mt-8 md:mt-14"
-                    >
-                        <Link
-                            to="/classes"
-                            // Adjusted padding and text size slightly for mobile
-                            className="px-8 py-3 sm:px-10 sm:py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-base sm:text-lg shadow-md hover:shadow-lg"
-                        >
-                            Find Classes
-                        </Link>
-                    </motion.div>
-
-                </div>
-            </section>
 
             {/* === 2. Cities Grid === */}
              {/* Adjusted vertical padding for mobile */}
@@ -149,7 +135,7 @@ const HomePage = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                      {/* Adjusted bottom margin */}
                     <div className="lg:text-center mb-10 md:mb-12">
-                        <h2 className="text-base text-indigo-600 font-semibold tracking-wide uppercase">Why Stand Strong?</h2>
+                        <h2 className="text-base text-indigo-600 font-semibold tracking-wide uppercase">Why Stand Strong</h2>
                         {/* Adjusted text size for mobile */}
                         <p className="mt-2 text-2xl leading-8 font-bold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">Empowerment Through Skill</p>
                          {/* Adjusted text size and margin */}
