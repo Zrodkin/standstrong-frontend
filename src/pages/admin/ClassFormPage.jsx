@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FiSave, FiTrash2, FiX } from 'react-icons/fi';
 import { getClassById, createClass, updateClass, deleteClass } from '../../services/classService';
 import { useClasses } from '../../context/ClassContext';
+import PlacesAutocompleteInput from '../../components/PlacesAutocompleteInput';
 
 
     
@@ -13,6 +14,7 @@ const ClassFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
+  
 
   // Form state
   const [formData, setFormData] = useState({
@@ -50,6 +52,21 @@ const ClassFormPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const handleAddressSelected = (selected) => {
+    console.log('Selected Address Data received in form:', selected);
+    setFormData(prev => ({
+      ...prev,
+      location: { // Update the nested location object
+        ...prev.location, // Keep other potential location fields
+        address: selected.address || '', // Update address
+        coordinates: { // Update nested coordinates
+          lat: selected.latitude || '', // Update latitude
+          lng: selected.longitude || '' // Update longitude
+        }
+      }
+    }));
+  };
 
   // Load class data if in edit mode
   useEffect(() => {
@@ -394,20 +411,23 @@ const ClassFormPage = () => {
     </div>
   </div>
 
-              <div className="sm:col-span-6">
-                <label htmlFor="location.address" className="block text-sm font-medium text-gray-700">
+  <div className="sm:col-span-6">
+                <label htmlFor="location-autocomplete" className="block text-sm font-medium text-gray-700">
                   Address *
                 </label>
                 <div className="mt-1">
-                  <input
-                    type="text"
-                    name="location.address"
-                    id="location.address"
-                    required
-                    className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    value={formData.location.address}
-                    onChange={handleChange}
+                  {/* Use the new Autocomplete Component Here */}
+                  <PlacesAutocompleteInput
+                    onAddressSelect={handleAddressSelected}
+                    // Pass the current address for edit mode initialization
+                    initialValue={formData.location.address}
                   />
+                   {/* Optionally display lat/lng if they are populated */}
+                   {(formData.location.coordinates.lat && formData.location.coordinates.lng) && (
+                      <p className="mt-1 text-xs text-gray-500">
+                         Lat: {formData.location.coordinates.lat}, Lng: {formData.location.coordinates.lng}
+                      </p>
+                   )}
                 </div>
               </div>
 
