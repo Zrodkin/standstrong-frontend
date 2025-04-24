@@ -13,39 +13,7 @@ import {
     FiAlertCircle // For delete confirmation alternative
 } from 'react-icons/fi';
 // Assuming service functions are correctly defined
-// import { getClasses, deleteClass } from '../../services/classService'; // Adjust path if needed
-
-// --- Mock Service Functions (Replace with actual imports) ---
-const mockInitialClasses = [
-    { _id: '1', title: 'Intro to Krav Maga', instructor: { name: 'John Doe' }, type: 'ongoing', city: 'New York', schedule: [], cost: 50, registeredStudents: [1, 2, 3], capacity: 10 },
-    { _id: '2', title: 'Women\'s Self Defense', instructor: { name: 'Jane Smith' }, type: 'one-time', city: 'Boston', schedule: [], cost: 25, registeredStudents: [1, 2, 3, 4, 5], capacity: 15 },
-    { _id: '3', title: 'Advanced Tactics', instructor: { name: 'Mike Lee' }, type: 'ongoing', city: 'New York', schedule: [], cost: 75, registeredStudents: [1, 2], capacity: 8 },
-    { _id: '4', title: 'Beginner Boxing', instructor: { name: 'Mike Lee' }, type: 'ongoing', city: 'Chicago', schedule: [], cost: 60, registeredStudents: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], capacity: 10 }, // Full class
-    { _id: '5', title: 'Empty Class', instructor: { name: 'Nobody Yet' }, type: 'one-time', city: 'Boston', schedule: [], cost: 30, registeredStudents: [], capacity: 12 },
-    { _id: '6', title: 'Class with No Instructor', title_lower: 'class with no instructor', instructor: null, type: 'one-time', city: 'Online', schedule: [], cost: 10, registeredStudents: [1], capacity: 5 },
-];
-
-const getClasses = async () => {
-    console.log("Fetching all classes...");
-    await new Promise(resolve => setTimeout(resolve, 400)); // Simulate delay
-    // Add lowercase versions for easier searching/sorting if needed, or handle in frontend
-     return mockInitialClasses.map(cls => ({
-       ...cls,
-       instructorName_lower: cls.instructor?.name?.toLowerCase() ?? '',
-       title_lower: cls.title?.toLowerCase() ?? '',
-       city_lower: cls.city?.toLowerCase() ?? '',
-     }));
-};
-
-const deleteClass = async (id) => {
-    console.log("Deleting class with ID:", id);
-    await new Promise(resolve => setTimeout(resolve, 300)); // Simulate delay
-    // Simulate potential error
-    // if (id === '1') throw new Error("Simulated delete error");
-    console.log("Class deleted successfully (mock)");
-    return { success: true };
-};
-// --- End Mock Service Functions ---
+import { getClasses, deleteClass } from '../../services/classService'; // Adjust path if needed
 
 
 const ClassesPage = () => {

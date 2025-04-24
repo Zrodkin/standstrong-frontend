@@ -4,37 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiFilter, FiX, FiCalendar, FiMapPin, FiDollarSign, FiUsers } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 // Assuming these service functions are correctly defined elsewhere
-// import { getClasses, getAllCities } from '../../services/classService'; // Adjusted path based on file location
+import { getClasses, getAllCities } from '../services/classService'; // Adjusted path based on file location
 import { format } from 'date-fns';
-
-// --- Mock Service Functions (Replace with your actual imports) ---
-// These are placeholders. Make sure you import your actual service functions.
-const getClasses = async (filters) => {
-    console.log("Fetching classes with filters:", filters);
-    // Replace with your actual API call
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-    // Mock data - replace with actual fetched data
-    return [
-        { _id: '1', title: 'Intro to Krav Maga', instructor: { name: 'John Doe' }, type: 'ongoing', description: 'Learn the basics of Krav Maga self-defense.', city: 'New York', schedule: [{ date: '2025-05-10T10:00:00Z' }, { date: '2025-06-21T10:00:00Z' }], cost: 50, registeredStudents: [1, 2, 3], capacity: 10 },
-        { _id: '2', title: 'Women\'s Self Defense Workshop', instructor: { name: 'Jane Smith' }, type: 'one-time', description: 'A one-time workshop focusing on practical techniques.', city: 'Boston', schedule: [{ date: '2025-05-15T18:00:00Z' }], cost: 25, registeredStudents: [1, 2, 3, 4, 5], capacity: 15 },
-        { _id: '3', title: 'Advanced Defense Tactics', instructor: { name: 'Mike Lee' }, type: 'ongoing', description: 'Ongoing class for experienced practitioners.', city: 'New York', schedule: [{ date: '2025-05-12T19:00:00Z' }, { date: '2025-07-20T19:00:00Z' }], cost: 75, registeredStudents: [1, 2], capacity: 8 },
-    ].filter(cls => { // Basic mock filtering
-        if (filters.city && cls.city !== filters.city) return false;
-        // Add more mock filtering logic based on your 'filters' object if needed for testing
-        if (filters.type && cls.type !== filters.type) return false;
-        if (filters.cost && cls.cost > Number(filters.cost)) return false;
-        // Add gender, age, time filtering simulation if necessary
-        return true;
-    });
-};
-
-const getAllCities = async () => {
-    // Replace with your actual API call
-    await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
-    // Mock data - replace with actual fetched data
-    return ['New York', 'Boston', 'Chicago'];
-};
-// --- End Mock Service Functions ---
 
 
 const ClassesPage = () => {

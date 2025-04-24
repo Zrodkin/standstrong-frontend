@@ -3,8 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FiSave, FiTrash2, FiX } from 'react-icons/fi';
 import { getClassById, createClass, updateClass, deleteClass } from '../../services/classService';
+import { useClasses } from '../../context/ClassContext';
+
+
+    
 
 const ClassFormPage = () => {
+  const { cities } = useClasses(); 
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -362,22 +367,32 @@ const ClassFormPage = () => {
           </div>
           <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-              <div className="sm:col-span-3">
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                  City *
-                </label>
-                <div className="mt-1">
-                  <input
-                    type="text"
-                    name="city"
-                    id="city"
-                    required
-                    className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    value={formData.city}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
+            <div className="sm:col-span-3">
+    <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+      City *
+    </label>
+    <div className="mt-1">
+      <select
+        id="city"
+        name="city"
+        required
+        className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md"
+        value={formData.city}
+        onChange={handleChange}
+      >
+        <option value="">Select a city</option>
+        {cities.map((city) => (
+          <option key={city} value={city}>
+            {city}
+          </option>
+        ))}
+        {/* Allow adding a new city if it's not in the list */}
+        {formData.city && !cities.includes(formData.city) && (
+          <option value={formData.city}>{formData.city} (New)</option>
+        )}
+      </select>
+    </div>
+  </div>
 
               <div className="sm:col-span-6">
                 <label htmlFor="location.address" className="block text-sm font-medium text-gray-700">

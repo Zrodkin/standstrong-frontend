@@ -11,7 +11,9 @@ import {
   getClassesByCity 
 } from '../services/classService';
 
-const ClassContext = createContext(null);
+
+
+
 
 // Export the provider component
 export const ClassProvider = ({ children }) => {
@@ -164,6 +166,7 @@ export const ClassProvider = ({ children }) => {
     fetchClassesByCity,
     setSelectedCity,
   };
+  
 
   return (
     <ClassContext.Provider value={value}>
@@ -171,6 +174,8 @@ export const ClassProvider = ({ children }) => {
     </ClassContext.Provider>
   );
 };
+
+const ClassContext = createContext(null);
 
 // Export the hook as a named function declaration instead of an arrow function
 export function useClasses() {
