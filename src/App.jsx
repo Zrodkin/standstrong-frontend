@@ -31,6 +31,9 @@ import AdminClassFormPage from './pages/admin/ClassFormPage';
 import AdminStudentsPage from './pages/admin/StudentsPage';
 import AdminAttendancePage from './pages/admin/AttendancePage';
 import AdminSettingsPage from './pages/admin/SettingsPage';
+import AdminCityFormPage from './pages/admin/AdminCityFormPage';
+import AdminCitiesPage from './pages/admin/AdminCitiesPage';
+import AdminCityEditPage from './pages/admin/AdminCityEditPage.jsx';
 
 // Error boundary component
 class ErrorBoundary extends React.Component {
@@ -232,7 +235,12 @@ const AppRoutes = () => {
           <Route path="students" element={<AdminStudentsPage />} />
           <Route path="attendance" element={<AdminAttendancePage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="cities/new" element={<AdminCityFormPage />} />
+          <Route path="cities" element={<AdminCitiesPage />} />
+          <Route path="cities/edit/:id" element={<AdminCityEditPage />} />
         </Route>
+
+       
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" />} />

@@ -7,13 +7,14 @@ import {
   updateClass, 
   deleteClass, 
   registerForClass, 
-  getAllCities, 
   getClassesByCity 
 } from '../services/classService';
 
+import { getAllCityRecords } from '../services/cityService';
 
 
 
+const ClassContext = createContext(null);
 
 // Export the provider component
 export const ClassProvider = ({ children }) => {
@@ -22,13 +23,14 @@ export const ClassProvider = ({ children }) => {
   const [selectedCity, setSelectedCity] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+ 
 
   // Get all cities on mount
   useEffect(() => {
     const fetchCities = async () => {
       try {
         setLoading(true);
-        const citiesData = await getAllCities();
+        const citiesData = await getAllCityRecords(); // ✅ correct service
         setCities(citiesData);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch cities');
@@ -175,7 +177,6 @@ export const ClassProvider = ({ children }) => {
   );
 };
 
-const ClassContext = createContext(null);
 
 // Export the hook as a named function declaration instead of an arrow function
 export function useClasses() {

@@ -9,7 +9,8 @@ import {
     FiCalendar,
     FiBarChart2,
     FiLogOut,
-    FiSettings
+    FiSettings,
+    FiMapPin
 } from 'react-icons/fi';
 // Assuming useAuth is correctly defined in your AuthContext
 // import { useAuth } from '../context/AuthContext'; // Adjust path if needed
@@ -55,6 +56,8 @@ const AdminLayout = () => {
         { name: 'Students', href: '/admin/students', icon: FiUsers, end: false },
         { name: 'Attendance', href: '/admin/attendance', icon: FiBarChart2, end: false },
         { name: 'Settings', href: '/admin/settings', icon: FiSettings, end: false },
+        { name: 'Cities', href: '/admin/cities', icon: FiMapPin, end: false },
+
     ];
 
     // Function to determine active link class

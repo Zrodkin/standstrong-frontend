@@ -382,14 +382,14 @@ const ClassFormPage = () => {
       >
         <option value="">Select a city</option>
         {cities.map((city) => (
-          <option key={city} value={city}>
-            {city}
-          </option>
-        ))}
+  <option key={city._id} value={city.name}>
+    {city.name}
+  </option>
+))}
         {/* Allow adding a new city if it's not in the list */}
-        {formData.city && !cities.includes(formData.city) && (
-          <option value={formData.city}>{formData.city} (New)</option>
-        )}
+        {formData.city && !cities.some(c => c.name === formData.city) && (
+  <option value={formData.city}>{formData.city} (New)</option>
+)}
       </select>
     </div>
   </div>

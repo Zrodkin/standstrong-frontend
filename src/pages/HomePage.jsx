@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
+
 // --- Import Hero image ---
 import heroImageFromFile from '../assets/class-hero-image.jpeg';
 const heroBackgroundImage = heroImageFromFile; // --- Assign Hero image ---
@@ -23,6 +24,10 @@ import siteLogo from '../assets/standstrong-logo-white.svg'; // Assuming this is
 
 // --- Import Icons ---
 import { FiUsers, FiShield, FiAward, FiZap } from 'react-icons/fi';
+
+import { useClasses } from '../context/ClassContext';
+import getFullImageUrl from '../utils/getFullImageUrl';
+
 
 const cityImageMap = {
   Boston: bostonImage,
@@ -54,8 +59,8 @@ const HomePage = () => {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.7, delay } },
   });
-
-  const displayCities = ['Boston', 'New York', 'Chicago', 'Los Angeles', 'Las Vegas'];
+  const { cities } = useClasses();
+ 
 
   return (
     <div className="bg-gradient-to-br from-sky-100 to-gray-100">
@@ -111,20 +116,22 @@ const HomePage = () => {
                         <p className="mt-3 max-w-2xl mx-auto text-lg text-gray-500 sm:text-xl sm:mt-4">Select your location to see available classes.</p>
                     </div>
                     {/* Grid starts with 2 columns, adjusts for medium and large screens */}
-                    <motion.div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 text-center" variants={containerVariants} initial="hidden" animate="visible">
-                        {displayCities.map((city) => (
-                            <motion.div key={city} variants={itemVariants}>
-                                <Link to={`/classes?city=${city}`} className="block group">
-                                    <div className="overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                        {/* Adjusted image height for mobile */}
-                                        <img src={cityImageMap[city] || defaultCityImage} alt={`${city} skyline`} className="w-full h-36 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
-                                    </div>
-                                     {/* Adjusted text size and margin */}
-                                    <p className="mt-2 sm:mt-3 font-semibold text-base sm:text-lg text-gray-900">{city}</p>
-                                    <p className="text-xs sm:text-sm text-indigo-600 font-medium">Classes Available</p>
-                                </Link>
-                            </motion.div>
-                        ))}
+                    <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-center" variants={containerVariants} initial="hidden" animate="visible">
+                    {cities.map((city) => (
+  <motion.div key={city._id} variants={itemVariants}>
+    <Link to={`/classes?city=${city.name}`} className="block group">
+      <div className="overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <img
+    src={getFullImageUrl(city.imageUrl) || defaultCityImage} // <-- USE THE FUNCTION HERE
+    alt={`${city.name} skyline`}
+    className="w-full h-40 sm:h-56 object-cover group-hover:scale-105 transition-transform duration-300" // Increased height
+ />
+      </div>
+      <p className="mt-2 sm:mt-3 font-semibold text-base sm:text-lg text-gray-900">{city.name}</p>
+      <p className="text-xs sm:text-sm text-indigo-600 font-medium">Classes Available</p>
+    </Link>
+  </motion.div>
+))}
                     </motion.div>
                 </div>
             </section>
