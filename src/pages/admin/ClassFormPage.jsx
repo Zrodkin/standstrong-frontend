@@ -23,10 +23,6 @@ const ClassFormPage = () => {
     city: '',
     location: {
       address: '',
-      coordinates: {
-        lat: '',
-        lng: ''
-      }
     },
     instructor: {
       name: '',
@@ -57,13 +53,9 @@ const ClassFormPage = () => {
     console.log('Selected Address Data received in form:', selected);
     setFormData(prev => ({
       ...prev,
-      location: { // Update the nested location object
-        ...prev.location, // Keep other potential location fields
-        address: selected.address || '', // Update address
-        coordinates: { // Update nested coordinates
-          lat: selected.latitude || '', // Update latitude
-          lng: selected.longitude || '' // Update longitude
-        }
+      location: {
+        ...prev.location,
+        address: selected.address || '',
       }
     }));
   };
@@ -378,93 +370,56 @@ const ClassFormPage = () => {
 
           {/* Location */}
           <div className="px-4 py-5 sm:px-6 bg-gray-50">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Location
-            </h3>
-          </div>
-          <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-            <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <div className="sm:col-span-3">
-    <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-      City *
-    </label>
-    <div className="mt-1">
-      <select
-        id="city"
-        name="city"
-        required
-        className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md"
-        value={formData.city}
-        onChange={handleChange}
-      >
-        <option value="">Select a city</option>
-        {cities.map((city) => (
-  <option key={city._id} value={city.name}>
-    {city.name}
-  </option>
-))}
-        {/* Allow adding a new city if it's not in the list */}
-        {formData.city && !cities.some(c => c.name === formData.city) && (
-  <option value={formData.city}>{formData.city} (New)</option>
-)}
-      </select>
+  <h3 className="text-lg leading-6 font-medium text-gray-900">
+    Location
+  </h3>
+</div>
+<div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+  <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+    <div className="sm:col-span-3">
+      <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+        City *
+      </label>
+      <div className="mt-1">
+        <select
+          id="city"
+          name="city"
+          required
+          className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md"
+          value={formData.city}
+          onChange={handleChange}
+        >
+          <option value="">Select a city</option>
+          {cities.map((city) => (
+            <option key={city._id} value={city.name}>
+              {city.name}
+            </option>
+          ))}
+          {/* Allow adding a new city if it's not in the list */}
+          {formData.city && !cities.some(c => c.name === formData.city) && (
+            <option value={formData.city}>{formData.city} (New)</option>
+          )}
+        </select>
+      </div>
+    </div>
+
+    <div className="sm:col-span-6">
+      <label htmlFor="location-autocomplete" className="block text-sm font-medium text-gray-700">
+        Address *
+      </label>
+      <div className="mt-1">
+        {/* Use the new Autocomplete Component Here */}
+        <PlacesAutocompleteInput
+          onAddressSelect={handleAddressSelected}
+          // Pass the current address for edit mode initialization
+          initialValue={formData.location.address}
+        />
+      </div>
     </div>
   </div>
+</div>
 
-  <div className="sm:col-span-6">
-                <label htmlFor="location-autocomplete" className="block text-sm font-medium text-gray-700">
-                  Address *
-                </label>
-                <div className="mt-1">
-                  {/* Use the new Autocomplete Component Here */}
-                  <PlacesAutocompleteInput
-                    onAddressSelect={handleAddressSelected}
-                    // Pass the current address for edit mode initialization
-                    initialValue={formData.location.address}
-                  />
-                   {/* Optionally display lat/lng if they are populated */}
-                   {(formData.location.coordinates.lat && formData.location.coordinates.lng) && (
-                      <p className="mt-1 text-xs text-gray-500">
-                         Lat: {formData.location.coordinates.lat}, Lng: {formData.location.coordinates.lng}
-                      </p>
-                   )}
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                <label htmlFor="location.coordinates.lat" className="block text-sm font-medium text-gray-700">
-                  Latitude (optional)
-                </label>
-                <div className="mt-1">
-                  <input
-                    type="text"
-                    name="location.coordinates.lat"
-                    id="location.coordinates.lat"
-                    className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    value={formData.location.coordinates.lat}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                <label htmlFor="location.coordinates.lng" className="block text-sm font-medium text-gray-700">
-                  Longitude (optional)
-                </label>
-                <div className="mt-1">
-                  <input
-                    type="text"
-                    name="location.coordinates.lng"
-                    id="location.coordinates.lng"
-                    className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    value={formData.location.coordinates.lng}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
+            
           {/* Instructor */}
           <div className="px-4 py-5 sm:px-6 bg-gray-50">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
