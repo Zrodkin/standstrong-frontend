@@ -1,91 +1,78 @@
-// fronted/src/pages/student/ClassesPage.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-    FiFilter, FiX, FiCalendar, FiMapPin, FiDollarSign, FiUsers,
-    FiAlertCircle, FiCheckCircle, FiUser, FiAward, FiSearch,
-    FiArrowLeft
+  FiFilter, FiX, FiCalendar, FiMapPin, FiDollarSign, FiUsers,
+  FiAlertCircle, FiUser, FiAward, FiSearch, FiArrowLeft
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getClasses } from '../services/classService'; // Removed getAllCities since we won't need it
+import { getClasses } from '../services/classService';
 import { format } from 'date-fns';
-import getFullImageUrl from '../utils/getFullImageUrl'; // Assuming path is correct
+import getFullImageUrl from '../utils/getFullImageUrl';
 
-// --- Remove unused CitySelectionGrid component since we'll redirect ---
-// We'll keep other utility components (LoadingSpinner, etc.) as they might be used elsewhere
-
-// --- Loading Spinner for classes ---
+// Loading Spinner
 const ClassLoadingSpinner = () => (
-    <div className="flex justify-center items-center py-20">
-        <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 border-solid rounded-full animate-spin"></div>
-        <p className="ml-4 text-gray-600">Loading Classes...</p>
-    </div>
+  <div className="flex justify-center items-center py-20">
+    <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+    <p className="ml-4 text-gray-600">Loading Classes...</p>
+  </div>
 );
 
-// --- Reusable UI Components (TestimonialsSection, EmptyState, ErrorMessage) ---
-const StatCard = ({ icon: Icon, label, value, color }) => (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center">
-        <div className={`p-2 rounded-full mr-3 ${color || 'bg-gray-100 text-gray-600'}`}>
-            <Icon className="h-5 w-5" />
-        </div>
-        <div>
-            <dt className="text-xs font-medium text-gray-500 truncate">{label}</dt>
-            <dd className="mt-1 text-sm font-semibold text-gray-900">{value}</dd>
-        </div>
-    </div>
-);
-
-const TestimonialsSection = () => (
-    <section className="py-16 bg-gradient-to-r from-gray-50 to-blue-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-                Testimonials
-            </h2>
-            <div className="relative bg-white p-8 rounded-xl shadow-lg text-center">
-                <FiAward className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-12 w-12 text-blue-500 bg-white p-2 rounded-full border-4 border-blue-50" />
-                <blockquote className="mt-6">
-                    <p className="text-lg italic text-gray-700 leading-relaxed">
-                        "StandStrong's class wasn't just about techniques; it built my confidence tremendously. I feel safer and more aware. Highly recommended for everyone!"
-                    </p>
-                </blockquote>
-                <footer className="mt-6">
-                    <p className="text-base font-semibold text-gray-900">Josh G.</p>
-                    <p className="text-sm text-gray-500">Former IDF Seargent</p>
-                </footer>
-            </div>
-        </div>
-    </section>
-);
-
+// EmptyState for no classes
 const EmptyState = ({ onClearFilters, reason }) => (
-    <div className="bg-white border border-gray-100 shadow-sm rounded-lg py-16 px-6 text-center mt-8 flex flex-col items-center">
-        <FiSearch className="w-16 h-16 text-blue-300 mb-4" />
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            {reason === 'initial' ? "Classes Coming Soon!" : "No Matching Classes Found"}
-        </h3>
-        <p className="mt-2 text-base text-gray-500 max-w-md mx-auto">
-            {reason === 'initial'
-                ? "We're preparing new classes. Please check back later or sign up for updates!"
-                : "Try adjusting your search filters or broaden your criteria to discover available classes."}
-        </p>
-        {reason !== 'initial' && (
-            <button
-                type="button"
-                className="mt-6 inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150"
-                onClick={onClearFilters}
-            >
-                Clear Filters
-            </button>
-        )}
-    </div>
+  <div className="bg-white border border-gray-100 shadow-sm rounded-lg py-16 px-6 text-center mt-8 flex flex-col items-center">
+    <FiSearch className="w-16 h-16 text-blue-300 mb-4" />
+    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+      {reason === 'initial' ? "Classes Coming Soon!" : "No Matching Classes Found"}
+    </h3>
+    <p className="mt-2 text-base text-gray-500 max-w-md mx-auto">
+      {reason === 'initial'
+        ? "We're preparing new classes. Please check back later or sign up for updates!"
+        : "Try adjusting your search filters or broaden your criteria to discover available classes."}
+    </p>
+    {reason !== 'initial' && (
+      <button
+        type="button"
+        onClick={onClearFilters}
+        className="mt-6 inline-flex items-center px-6 py-2.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        Clear Filters
+      </button>
+    )}
+  </div>
 );
 
+// Error Message
 const ErrorMessage = ({ message }) => (
-    <div className="bg-red-50 border border-red-200 p-4 mt-6 rounded-lg flex items-center">
-        <FiAlertCircle className="h-6 w-6 text-red-500 mr-3 flex-shrink-0" />
-        <p className="text-sm font-medium text-red-800">{message || 'An error occurred.'}</p>
-    </div>
+  <div className="bg-red-50 border border-red-200 p-4 mt-6 rounded-lg flex items-center">
+    <FiAlertCircle className="h-6 w-6 text-red-500 mr-3" />
+    <p className="text-sm font-medium text-red-800">{message || 'An error occurred.'}</p>
+  </div>
 );
+
+// Testimonials Section
+const TestimonialsSection = () => (
+  <section className="py-16 bg-gradient-to-r from-gray-50 to-blue-50">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+        Testimonials
+      </h2>
+      <div className="relative bg-white p-8 rounded-xl shadow-lg text-center">
+        <FiAward className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-12 w-12 text-blue-500 bg-white p-2 rounded-full border-4 border-blue-50" />
+        <blockquote className="mt-6">
+          <p className="text-lg italic text-gray-700 leading-relaxed">
+            "StandStrong's class wasn't just about techniques; it built my confidence tremendously. I feel safer and more aware. Highly recommended for everyone!"
+          </p>
+        </blockquote>
+        <footer className="mt-6">
+          <p className="text-base font-semibold text-gray-900">Josh G.</p>
+          <p className="text-sm text-gray-500">Former IDF Sergeant</p>
+        </footer>
+      </div>
+    </div>
+  </section>
+);
+
+
 
 // --- Main Classes Page Component ---
 const ClassesPage = () => {
@@ -277,18 +264,19 @@ const displayReason = !classesLoading && classes.length === 0
 // --- Render Logic ---
 return (
     <div className="bg-gray-50 min-h-screen">
-        {/* Hero Section */}
-        <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 text-white overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 text-center">
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4">
-                    Find Your Strength
-                </h1>
-                <p className="mt-4 text-lg md:text-xl text-blue-100 max-w-3xl mx-auto">
-                    Browse our self-defense classes designed to empower you with practical skills and confidence. Find the right fit for your needs and schedule.
-                </p>
-            </div>
-            <div className="absolute bottom-0 left-0 w-full h-16 bg-gray-50" style={{ clipPath: 'polygon(0 100%, 100% 0, 100% 100%)' }}></div>
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-teal-500 to-cyan-600 text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4">
+            Find Your Strength
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-cyan-100 max-w-3xl mx-auto">
+            Browse our self-defense classes designed to empower you with practical skills and confidence.
+            Find the right fit for your needs and schedule.
+          </p>
         </div>
+</div>
+
 
         {/* Main Content Area */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
