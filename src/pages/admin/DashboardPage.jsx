@@ -68,17 +68,30 @@ const AdminDashboardPage = () => {
     // Count students (non-admin users)
     const students = users.filter(user => user.role === 'student');
     
-    // Count total revenue and capacity
-    const totalRevenue = classes.reduce((sum, cls) => sum + (cls.cost * cls.registeredStudents.length), 0);
-    const totalCapacity = classes.reduce((sum, cls) => sum + cls.capacity, 0);
-    const totalEnrolled = classes.reduce((sum, cls) => sum + cls.registeredStudents.length, 0);
+    // Count total revenue and capacity with safety checks
+    const totalRevenue = classes.reduce((sum, cls) => {
+      // Check if registeredStudents exists and is an array
+      const studentsCount = cls.registeredStudents && Array.isArray(cls.registeredStudents) 
+        ? cls.registeredStudents.length 
+        : 0;
+      return sum + (cls.cost || 0) * studentsCount;
+    }, 0);
+    
+    const totalCapacity = classes.reduce((sum, cls) => sum + (cls.capacity || 0), 0);
+    
+    const totalEnrolled = classes.reduce((sum, cls) => {
+      // Check if registeredStudents exists and is an array
+      return sum + (cls.registeredStudents && Array.isArray(cls.registeredStudents) 
+        ? cls.registeredStudents.length 
+        : 0);
+    }, 0);
     
     // Count class types
     const oneTimeClasses = classes.filter(cls => cls.type === 'one-time').length;
     const ongoingClasses = classes.filter(cls => cls.type === 'ongoing').length;
     
     // Get unique cities
-    const cities = [...new Set(classes.map(cls => cls.city))];
+    const cities = [...new Set(classes.map(cls => cls.city).filter(Boolean))];
     
     // Gender distribution
     const genderCounts = {
@@ -322,19 +335,19 @@ const AdminDashboardPage = () => {
             <h2 className="text-lg leading-6 font-medium text-gray-900">Cities with Classes</h2>
             <div className="mt-5">
               <ul className="divide-y divide-gray-200">
-                {stats.citiesWithClasses.map((city) => (
-                  <li key={city} className="py-4 flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FiMapPin className="text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-900">{city}</span>
-                    </div>
-                    <div>
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                        {classesData.filter(cls => cls.city === city).length} classes
-                      </span>
-                    </div>
-                  </li>
-                ))}
+              {stats.citiesWithClasses.map((city) => (
+  <li key={city} className="py-4 flex items-center justify-between">
+    <div className="flex items-center">
+      <FiMapPin className="text-gray-400 mr-2" />
+      <span className="text-sm text-gray-900">{city}</span>
+    </div>
+    <div>
+      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+        {classesData.filter(cls => cls.city === city).length} classes
+      </span>
+    </div>
+  </li>
+))}
               </ul>
               {stats.citiesWithClasses.length === 0 && (
                 <div className="text-center py-4">
@@ -418,50 +431,50 @@ const AdminDashboardPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {classesData.slice(0, 5).map((cls) => (
-                <tr key={cls._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{cls.title}</div>
-                    <div className="text-sm text-gray-500">{cls.instructor.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{cls.city}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      cls.type === 'one-time' 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {cls.type === 'one-time' ? 'One-time' : 'Ongoing'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {cls.registeredStudents.length}/{cls.capacity}
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div 
-                        className="bg-primary-600 h-2.5 rounded-full" 
-                        style={{ 
-                          width: `${(cls.registeredStudents.length / cls.capacity) * 100}%` 
-                        }}
-                      ></div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${cls.cost}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link to={`/admin/classes/edit/${cls._id}`} className="text-primary-600 hover:text-primary-900 mr-4">
-                      Edit
-                    </Link>
-                    <Link to={`/classes/${cls._id}`} className="text-primary-600 hover:text-primary-900">
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+             {classesData.slice(0, 5).map((cls) => (
+  <tr key={cls._id}>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="text-sm font-medium text-gray-900">{cls.title || 'Untitled Class'}</div>
+      <div className="text-sm text-gray-500">{cls.instructor?.name || 'Unknown Instructor'}</div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="text-sm text-gray-900">{cls.city || 'No Location'}</div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+        cls.type === 'one-time' 
+          ? 'bg-yellow-100 text-yellow-800' 
+          : 'bg-green-100 text-green-800'
+      }`}>
+        {cls.type === 'one-time' ? 'One-time' : 'Ongoing'}
+      </span>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="text-sm text-gray-900">
+        {(cls.registeredStudents && Array.isArray(cls.registeredStudents) ? cls.registeredStudents.length : 0)}/{cls.capacity || 0}
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div 
+          className="bg-primary-600 h-2.5 rounded-full" 
+          style={{ 
+            width: `${cls.capacity ? ((cls.registeredStudents && Array.isArray(cls.registeredStudents) ? cls.registeredStudents.length : 0) / cls.capacity) * 100 : 0}%` 
+          }}
+        ></div>
+      </div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      ${cls.cost || 0}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+      <Link to={`/admin/classes/edit/${cls._id}`} className="text-primary-600 hover:text-primary-900 mr-4">
+        Edit
+      </Link>
+      <Link to={`/classes/${cls._id}`} className="text-primary-600 hover:text-primary-900">
+        View
+      </Link>
+    </td>
+  </tr>
+))}
             </tbody>
           </table>
           {classesData.length === 0 && (

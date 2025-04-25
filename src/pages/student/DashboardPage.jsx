@@ -1,4 +1,4 @@
-// client/src/pages/student/DashboardPage.jsx
+// frontend/src/pages/student/DashboardPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';

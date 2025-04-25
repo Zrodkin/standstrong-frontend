@@ -1,6 +1,6 @@
-import React, { useState } from 'react'; // <-- Import useState
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion'; // <-- Import AnimatePresence
+import React, { useState, useRef, useEffect } from 'react'; // Added useRef and useEffect
+import { Link, useLocation } from 'react-router-dom'; // Added useLocation
+import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Import Hero image ---
 import heroImageFromFile from '../assets/class-hero-image.jpeg';
@@ -49,7 +49,7 @@ const ourStoryContent = {
     title: "Our Journey to Empowerment",
     paragraphs: [
         "At StandStrong our mission is to change the narrative for all groups affected by bigotry, bullying and hate.",
-        "We don’t seek to change the mindset of those who teach hate. Instead, we choose to set an example of living a positive life with diverse groups who support one another. Every community deserves to be represented by people who are proud of themselves and their heritage.",
+        "We don't seek to change the mindset of those who teach hate. Instead, we choose to set an example of living a positive life with diverse groups who support one another. Every community deserves to be represented by people who are proud of themselves and their heritage.",
         "Our programs do not teach students how to fight, but how to avoid becoming a victim. We teach self-defense skills to disengage and de-escalate tension and conflict in a calm and confident manner.",
         "To date, we have trained thousands of students to be safe, proud and confident in who they are and what they believe. These students are the future leaders of our communities. Their participation in StandStrong programs will provide them with newfound confidence and pride as they help change the narrative generation by generation.",
     ]
@@ -58,6 +58,33 @@ const ourStoryContent = {
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('about'); // State for toggling content
+  const citiesSectionRef = useRef(null); // Reference to cities section
+  const location = useLocation(); // Get location for detecting hash changes
+
+  // Handle scroll to cities section when hash changes
+  useEffect(() => {
+    // Check for hash in URL or if coming from /classes route
+    if (location.hash === '#cities-section' && citiesSectionRef.current) {
+      // Scroll to cities section with a small delay to ensure proper rendering
+      setTimeout(() => {
+        citiesSectionRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
+    }
+  }, [location]);
+
+  // Function to scroll to cities section
+  const scrollToCities = (e) => {
+    e.preventDefault(); // Prevent default link behavior
+    if (citiesSectionRef.current) {
+      citiesSectionRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -112,18 +139,19 @@ const HomePage = () => {
             animate="visible"
             className="mt-8 md:mt-14"
           >
-            <Link
-              to="/classes"
+            {/* Changed to use onClick scrollToCities instead of Link to="/classes" */}
+            <button
+              onClick={scrollToCities}
               className="px-8 py-3 sm:px-10 sm:py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-base sm:text-lg shadow-md hover:shadow-lg"
             >
               Find Classes
-            </Link>
+            </button>
           </motion.div>
         </div>
       </section>
 
       {/* === 2. Cities Grid === */}
-      <section className="py-12 md:py-16 bg-gray-50">
+      <section id="cities-section" className="py-12 md:py-16 bg-gray-50" ref={citiesSectionRef}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-10 md:mb-12">
                   <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">Find Us In Your City</h2>
@@ -275,12 +303,13 @@ const HomePage = () => {
                       Join a self-defense class today and stand strong in your life.
                   </p>
                   <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                      <Link
-                          to="/classes"
+                      {/* Update this link to use the scroll function */}
+                      <button
+                          onClick={scrollToCities}
                           className="px-6 py-2.5 sm:px-8 sm:py-3 bg-white text-indigo-700 font-semibold rounded-lg shadow-md hover:bg-gray-100 transition-colors duration-300 w-full sm:w-auto text-sm sm:text-base"
                       >
                           Browse Classes
-                      </Link>
+                      </button>
                       <Link
                           to="/register"
                           className="px-6 py-2.5 sm:px-8 sm:py-3 border border-white font-semibold rounded-lg hover:bg-white hover:text-indigo-700 transition-colors duration-300 w-full sm:w-auto text-sm sm:text-base"
