@@ -457,9 +457,9 @@ return (
                         <label htmlFor="filter-gender" className={formLabelClass}>Focus</label>
                         <select id="filter-gender" name="gender" className={formInputClass} value={filters.gender} onChange={handleFilterChange}>
                             <option value="">Any Focus</option>
-                            <option value="female">Female Focused</option>
-                            <option value="male">Male Focused</option>
-                            <option value="any">Co-Ed / Mixed</option>
+                            <option value="female">Women's Class</option>
+                            <option value="male">Men's Class</option>
+                            <option value="any">Co-Ed</option>
                         </select>
                     </div>
                     <div>
