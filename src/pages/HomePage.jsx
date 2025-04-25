@@ -28,9 +28,9 @@ import { useClasses } from '../context/ClassContext';
 import getFullImageUrl from '../utils/getFullImageUrl';
 
 const cityImageMap = {
-  Boston: bostonImage,
+  'Boston': bostonImage,
   'New York': newyorkImage,
-  Chicago: chicagoImage,
+ 'Chicago': chicagoImage,
   'Los Angeles': laImage,
   'Las Vegas': lasvegasImage,
 };
