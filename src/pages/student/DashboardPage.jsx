@@ -2,118 +2,126 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-// Import motion from framer-motion
 import { motion } from 'framer-motion';
-// Import necessary icons from react-icons/fi
 import {
     FiCalendar,
     FiMapPin,
     FiClock,
     FiUser,
     FiCheckCircle,
-    FiClipboard, // Already imported
-    FiBookOpen, // Added for Enrolled Classes section
-    FiMoon,     // Added for theme toggle placeholder
-    FiSun,      // Added for theme toggle placeholder
-    FiAlertCircle // Added for error display consistency
+    FiClipboard,
+    FiBookOpen,
+    FiMoon,
+    FiSun,
+    FiAlertCircle
 } from 'react-icons/fi';
-import { useAuth } from '../../context/AuthContext'; // Adjust path if needed
+import { useAuth } from '../../context/AuthContext';
+import { getClassById } from '../../services/classService'; // Import the real service function
 
-// --- Mock Service Functions & Context (Keep for now, replace later) ---
-const mockCurrentUser = {
-    _id: 'student123',
-    firstName: 'Zalman', // Using the name from the design suggestion
-    registeredClasses: ['1', '3'],
-};
-const mockClasses = { /* ... keep your mock class data ... */
-    '1': { _id: '1', title: 'Intro to Krav Maga', instructor: { name: 'John Doe' }, type: 'ongoing', description: 'Learn the basics...', city: 'New York', schedule: [{ date: '2025-04-25T10:00:00Z', startTime: '10:00', endTime: '11:00' }, { date: '2025-05-02T10:00:00Z', startTime: '10:00', endTime: '11:00' }, { date: '2024-04-20T10:00:00Z', startTime: '10:00', endTime: '11:00' }], cost: 50, registeredStudents: [1, 2, 3], capacity: 10 },
-    '2': { _id: '2', title: 'Women\'s Self Defense', instructor: { name: 'Jane Smith' }, type: 'one-time', description: 'A one-time workshop...', city: 'Boston', schedule: [{ date: '2025-05-15T18:00:00Z', startTime: '18:00', endTime: '20:00' }], cost: 25, registeredStudents: [1, 2, 3, 4, 5], capacity: 15 },
-    '3': { _id: '3', title: 'Advanced Tactics', instructor: { name: 'Mike Lee' }, type: 'ongoing', description: 'For experienced practitioners.', city: 'New York', schedule: [{ date: '2025-04-29T19:00:00Z', startTime: '19:00', endTime: '20:30' }, { date: '2025-05-06T19:00:00Z', startTime: '19:00', endTime: '20:30' }], cost: 75, registeredStudents: [1, 2], capacity: 8 },
-};
-const getClassById = async (classId) => { /* ... keep mock function ... */
-    console.log("Fetching class details for ID:", classId);
-    await new Promise(resolve => setTimeout(resolve, 200));
-    if (!mockClasses[classId]) return null;
-    return mockClasses[classId];
-};
-const getClassAttendance = async (studentId, classId) => { /* ... keep mock function ... */
-    console.log(`Mocking attendance for student ${studentId}, class ${classId}`);
-    await new Promise(resolve => setTimeout(resolve, 150));
-    return [{ date: '2024-04-20T10:00:00Z', status: 'present' },];
-};
-// --- End Mock Data ---
-
-// --- Dummy Theme Toggle State (Replace with actual context/state) ---
+// Dummy Theme Toggle State
 const useTheme = () => {
-    const [theme, setTheme] = useState('light'); // Default to light
+    const [theme, setTheme] = useState('light');
     const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
-    // In a real app, add useEffect to apply class to document.body
     return { theme, toggleTheme };
-}
-// ----------------------------------------------------------------------
+};
+
 
 const DashboardPage = () => {
-    const { currentUser } = useAuth() || { currentUser: mockCurrentUser }; // Use mock if context not ready/available
+    // Use the real auth context without fallback to mock data
+    const { currentUser } = useAuth();
     const [enrolledClasses, setEnrolledClasses] = useState([]);
     const [upcomingSessions, setUpcomingSessions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { theme, toggleTheme } = useTheme(); // Placeholder theme state
+    const { theme, toggleTheme } = useTheme();
+
 
     useEffect(() => {
-        // --- Keep your existing useEffect fetchDashboardData logic ---
         const fetchDashboardData = async () => {
-             if (!currentUser?._id) {
-                 setLoading(false);
-                 setError("Not logged in.");
-                 return;
-             }
-             try {
-                 setLoading(true);
-                 setError(null);
-                 setEnrolledClasses([]);
-                 setUpcomingSessions([]);
-                 const registeredClassIds = currentUser.registeredClasses || [];
-                 if (registeredClassIds.length === 0) {
-                     setLoading(false);
-                     return;
-                 }
-                 const classPromises = registeredClassIds.map(classId => getClassById(classId));
-                 const classesDataResults = await Promise.all(classPromises);
-                 const validClassesData = classesDataResults.filter(cls => cls != null);
-                 setEnrolledClasses(validClassesData);
-                 const now = new Date();
-                 const upcoming = [];
-                 validClassesData.forEach(cls => {
-                     if (cls?.schedule && cls.schedule.length > 0) {
-                         cls.schedule.forEach(session => {
-                             try {
-                                 const sessionDate = new Date(session.date);
-                                 if (session.date && !isNaN(sessionDate) && sessionDate > now) {
-                                     upcoming.push({
-                                         classId: cls._id,
-                                         className: cls.title || 'Unnamed Class',
-                                         city: cls.city || 'N/A',
-                                         date: sessionDate,
-                                         startTime: session.startTime || 'N/A',
-                                         endTime: session.endTime || 'N/A',
-                                     });
-                                 }
-                             } catch (dateError) { console.error(`Error processing date for session in class ${cls._id}:`, session.date, dateError); }
-                         });
-                     }
-                 });
-                 upcoming.sort((a, b) => a.date - b.date);
-                 setUpcomingSessions(upcoming);
-             } catch (err) {
-                 setError('Failed to load your dashboard data. Please try again later.');
-                 console.error("Dashboard fetch error:", err);
-             } finally {
-                 setLoading(false);
-             }
+          if (!currentUser?._id) {
+            setLoading(false);
+            setError("Not logged in.");
+            return;
+          }
+          try {
+            setLoading(true);
+            setError(null);
+            setEnrolledClasses([]);
+            setUpcomingSessions([]);
+            
+            console.log("Current user in dashboard:", currentUser);
+            console.log("Current user from localStorage:", JSON.parse(localStorage.getItem('user')));
+            
+            // Get registered class IDs - check several possible places
+            let registeredClassIds = [];
+            
+            // First, check localStorage directly in case context isn't updated
+            const localStorageUser = JSON.parse(localStorage.getItem('user')) || {};
+            if (Array.isArray(localStorageUser.registeredClasses) && localStorageUser.registeredClasses.length > 0) {
+              registeredClassIds = localStorageUser.registeredClasses;
+            } 
+            // Fallback to currentUser if localStorage doesn't have registeredClasses
+            else if (Array.isArray(currentUser.registeredClasses)) {
+              registeredClassIds = currentUser.registeredClasses;
+            }
+            // If we still don't have any, check if it's in a different format
+            else if (currentUser.registeredClasses && typeof currentUser.registeredClasses === 'object') {
+              registeredClassIds = Object.keys(currentUser.registeredClasses);
+            }
+            
+            console.log("User's registered classes:", registeredClassIds);
+            console.log("Type of registeredClasses:", typeof currentUser.registeredClasses);
+            console.log("Is array?", Array.isArray(currentUser.registeredClasses));
+            
+            if (registeredClassIds.length === 0) {
+              setLoading(false);
+              return;
+            }
+            
+            // Fetch data for each class
+            const classPromises = registeredClassIds.map(classId => getClassById(classId));
+            const classesDataResults = await Promise.all(classPromises);
+            const validClassesData = classesDataResults.filter(cls => cls != null);
+            
+            console.log("Fetched class data:", validClassesData);
+            setEnrolledClasses(validClassesData);
+            
+            // Process upcoming sessions
+            const now = new Date();
+            const upcoming = [];
+            validClassesData.forEach(cls => {
+              if (cls?.schedule && cls.schedule.length > 0) {
+                cls.schedule.forEach(session => {
+                  try {
+                    const sessionDate = new Date(session.date);
+                    if (session.date && !isNaN(sessionDate) && sessionDate > now) {
+                      upcoming.push({
+                        classId: cls._id,
+                        className: cls.title || 'Unnamed Class',
+                        city: cls.city || 'N/A',
+                        date: sessionDate,
+                        startTime: session.startTime || 'N/A',
+                        endTime: session.endTime || 'N/A',
+                      });
+                    }
+                  } catch (dateError) {
+                    console.error(`Error processing date for session in class ${cls._id}:`, session.date, dateError);
+                  }
+                });
+              }
+            });
+            upcoming.sort((a, b) => a.date - b.date);
+            setUpcomingSessions(upcoming);
+          } catch (err) {
+            setError('Failed to load your dashboard data. Please try again later.');
+            console.error("Dashboard fetch error:", err);
+          } finally {
+            setLoading(false);
+          }
         };
+        
         fetchDashboardData();
-    }, [currentUser]); // End useEffect
+      }, [currentUser]);
 
 
     if (loading) {

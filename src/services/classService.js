@@ -33,9 +33,20 @@ export const deleteClass = async (id) => {
 
 // Register for a class
 export const registerForClass = async (classId) => {
-  const response = await api.post(`/classes/${classId}/register`);
-  return response.data;
-};
+    const response = await api.post(`/classes/${classId}/register`);
+    
+    // After registration, manually update the user data in localStorage
+    const userData = JSON.parse(localStorage.getItem('user')) || {};
+    if (!userData.registeredClasses) {
+      userData.registeredClasses = [];
+    }
+    if (!userData.registeredClasses.includes(classId)) {
+      userData.registeredClasses.push(classId);
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+    
+    return response.data;
+  };
 
 // Get all cities with classes
 export const getAllCities = async () => {
