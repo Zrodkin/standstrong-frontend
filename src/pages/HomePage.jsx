@@ -164,59 +164,62 @@ const HomePage = () => {
 
   const { cities } = useClasses()
 
-  return (
-    <div>
-      {/* === Hero Section === */}
-      <section className="relative h-[50vh] sm:h-[65vh] md:h-[70vh]">
-        {/* Background Image - Fixed centering for all devices */}
-        <div className="absolute inset-0 overflow-hidden">
-          <img
-            src={heroBackgroundImage}
-            alt="Stand Strong Hero"
-            className="absolute inset-0 w-full h-full object-cover object-center"
+  
+return (
+  <div>
+    {/* === Hero Section === */}
+    <section className="relative h-[70vh] sm:h-[65vh] md:h-[70vh]">
+      {/* Background Image - Fixed centering for all devices */}
+      <div className="absolute inset-0 overflow-hidden">
+        <img
+          src={heroBackgroundImage}
+          alt="Stand Strong Hero"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+      
+      {/* Darker overlay */}
+      <div className="absolute inset-0 bg-black/60"></div>
+      
+      {/* Content container */}
+      <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4 sm:px-6">
+        {/* Logo with motion */}
+        <motion.div variants={heroItemVariants(0)} initial="hidden" animate="visible">
+          <img 
+            src={siteLogo} 
+            alt="Stand Strong Logo" 
+            className="h-14 sm:h-16 md:h-20 w-auto" 
           />
-        </div>
+        </motion.div>
         
-        {/* Darker overlay */}
-        <div className="absolute inset-0 bg-black/60"></div>
+        {/* Text */}
+        <motion.p
+          className="mt-2 sm:mt-4 text-lg sm:text-xl md:text-2xl max-w-xl sm:max-w-2xl"
+          variants={heroItemVariants(0.2)}
+          initial="hidden"
+          animate="visible"
+        >
+          Empowering through self-defense classes in your city
+        </motion.p>
         
-        {/* Content container */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4 sm:px-6">
-          {/* Logo with motion */}
-          <motion.div variants={heroItemVariants(0)} initial="hidden" animate="visible">
-            <img 
-              src={siteLogo} 
-              alt="Stand Strong Logo" 
-              className="h-14 sm:h-16 md:h-20 w-auto" 
-            />
-          </motion.div>
-          
-          {/* Text */}
-          <motion.p
-            className="mt-2 sm:mt-4 text-lg sm:text-xl md:text-2xl max-w-xl sm:max-w-2xl"
-            variants={heroItemVariants(0.2)}
-            initial="hidden"
-            animate="visible"
+        {/* Button with larger bottom margin */}
+        <motion.div
+          variants={heroItemVariants(0.4)}
+          initial="hidden"
+          animate="visible"
+          className="mt-8 md:mt-14"
+        >
+          <button
+            onClick={scrollToCities}
+            className="px-8 py-3 sm:px-10 sm:py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-base sm:text-lg shadow-md hover:shadow-lg"
           >
-            Empowering through self-defense classes in your city
-          </motion.p>
-          
-          {/* Button with larger bottom margin */}
-          <motion.div
-            variants={heroItemVariants(0.4)}
-            initial="hidden"
-            animate="visible"
-            className="mt-8 md:mt-14"
-          >
-            <button
-              onClick={scrollToCities}
-              className="px-8 py-3 sm:px-10 sm:py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-base sm:text-lg shadow-md hover:shadow-lg"
-            >
-              Find Classes
-            </button>
-          </motion.div>
-        </div>
-      </section>
+            Find Classes
+          </button>
+        </motion.div>
+      </div>
+    </section>
 
 
 
@@ -252,7 +255,11 @@ const HomePage = () => {
                 src={getFullImageUrl(city.imageUrl) || cityImageMap[city.name] || defaultCityImage}
                 alt={`${city.name} skyline`}
                 className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
+                loading="eager"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = defaultCityImage;
+                }}
               />
             </div>
             <p className="mt-1 sm:mt-2 font-semibold text-sm sm:text-base md:text-lg text-gray-900">{city.name}</p>
