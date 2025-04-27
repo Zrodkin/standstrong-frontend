@@ -2,7 +2,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getClassById, registerForClass } from '../../services/classService';
+import { getClassById } from '/src/services/classService.js'; // Keep if needed, use absolute path
+import { createRegistration } from '/src/services/registrationService.js';
 import { format } from 'date-fns';
 import { FiInfo, FiCheckCircle, FiXCircle, FiLogIn, FiLoader, FiArrowLeft, FiClock, FiMapPin, FiDollarSign, FiUsers } from 'react-icons/fi';
 
@@ -50,26 +51,38 @@ const ClassRegistrationPage = () => {
 
     const handleRegistration = async () => {
         if (registrationStatus !== 'idle' || isSubmitting) return;
-      
+    
         setIsSubmitting(true);
         setError('');
         try {
           console.log("Starting registration for class:", classId);
-          const response = await registerForClass(classId);
-          console.log("Registration response:", response);
-          
-          // Manually update localStorage
-          const userData = JSON.parse(localStorage.getItem('user')) || {};
-          if (!userData.registeredClasses) {
-            userData.registeredClasses = [];
-          }
-          if (!userData.registeredClasses.includes(classId)) {
-            userData.registeredClasses.push(classId);
-            localStorage.setItem('user', JSON.stringify(userData));
-            console.log("Updated localStorage with new class ID");
-          }
-          
+    
+          // --- CHANGE THIS LINE ---
+          // const response = await registerForClass(classId); // OLD FUNCTION CALL
+          const response = await createRegistration(classId); // NEW FUNCTION CALL
+          // --- END CHANGE ---
+    
+          console.log("Registration response:", response); // Response from createRegistration
+    
+          // --- DELETE THIS BLOCK ---
+          // // Manually update localStorage
+          // const userData = JSON.parse(localStorage.getItem('user')) || {};
+          // if (!userData.registeredClasses) {
+          //   userData.registeredClasses = [];
+          // }
+          // if (!userData.registeredClasses.includes(classId)) {
+          //   userData.registeredClasses.push(classId);
+          //   localStorage.setItem('user', JSON.stringify(userData));
+          //   console.log("Updated localStorage with new class ID");
+          // }
+          // --- END DELETE ---
+    
           setRegistrationStatus('success');
+    
+          // Optional: Refresh user's registration list if needed for UI updates elsewhere
+          // Example: If you have a fetchUserRegistrations function available:
+          // fetchUserRegistrations();
+    
         } catch (err) {
           console.error("Registration error:", err);
           setError(err.response?.data?.message || 'Registration failed. Please try again.');

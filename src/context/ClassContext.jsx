@@ -5,8 +5,7 @@ import {
   getClassById, 
   createClass, 
   updateClass, 
-  deleteClass, 
-  registerForClass, 
+  deleteClass,  
   getClassesByCity 
 } from '../services/classService';
 
@@ -120,21 +119,7 @@ export const ClassProvider = ({ children }) => {
     }
   };
 
-  // Register for a class
-  const registerClass = async (classId) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await registerForClass(classId);
-      // You might want to update the class or user data here
-      return true;
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to register for class');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   // Fetch classes by city
   const fetchClassesByCity = async (city) => {
@@ -164,7 +149,6 @@ export const ClassProvider = ({ children }) => {
     addClass,
     editClass,
     removeClass,
-    registerClass,
     fetchClassesByCity,
     setSelectedCity,
   };

@@ -31,29 +31,6 @@ export const deleteClass = async (id) => {
   return response.data;
 };
 
-// Register for a class
-export const registerForClass = async (classId) => {
-    try {
-      // Ensure classId is a string
-      const id = typeof classId === 'object' ? classId.toString() : classId;
-      
-      // Make the API call with the correct ID format
-      const response = await api.post(`/classes/${id}/register`);
-      
-      // After registration, call getUserProfile to get fresh user data
-      if (response.data) {
-        // Import getUserProfile from authService
-        const { getUserProfile } = await import('./authService');
-        await getUserProfile();
-      }
-      
-      return response.data;
-    } catch (error) {
-      console.error('Error registering for class:', error);
-      throw error;
-    }
-  };
-
 // Get all cities with classes
 export const getAllCities = async () => {
   const response = await api.get('/classes/cities');

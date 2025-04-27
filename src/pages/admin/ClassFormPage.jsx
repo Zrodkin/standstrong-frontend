@@ -2,11 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FiSave, FiTrash2, FiX, FiUpload, FiRefreshCw, FiPlus } from 'react-icons/fi';
-import { getClassById, createClass, updateClass, deleteClass } from '../../services/classService';
-import { useClasses } from '../../context/ClassContext';
-import PlacesAutocompleteInput from '../../components/PlacesAutocompleteInput';
-import api from '../../services/api'; // <== for uploading files
-
+import { getClassById, createClass, updateClass, deleteClass } from '/src/services/classService.js';
+import api from '/src/services/api.js';
+import { useClasses } from '/src/context/ClassContext.jsx';
+import PlacesAutocompleteInput from '/src/components/PlacesAutocompleteInput.jsx';
 const SERVER_BASE_URL = 'https://standstrong.onrender.com';
 
 // Helper function to construct full URL from relative path

@@ -76,11 +76,7 @@ export const AuthProvider = ({ children }) => {
       const userData = await getUserProfile();
       console.log("Received updated user data:", userData);
       
-      // If userData doesn't have registeredClasses, initialize it
-      if (!userData.registeredClasses) {
-        userData.registeredClasses = [];
-      }
-      
+    
       // Explicitly update localStorage with full user data including registeredClasses
       localStorage.setItem('user', JSON.stringify(userData));
       

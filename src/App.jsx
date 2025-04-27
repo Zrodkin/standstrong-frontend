@@ -34,6 +34,7 @@ import AdminSettingsPage from './pages/admin/SettingsPage';
 import AdminCityFormPage from './pages/admin/AdminCityFormPage';
 import AdminCitiesPage from './pages/admin/AdminCitiesPage';
 import AdminCityEditPage from './pages/admin/AdminCityEditPage.jsx';
+import AdminRegistrationsPage from './pages/admin/RegistrationsPage';
 
 // Error boundary component
 class ErrorBoundary extends React.Component {
@@ -234,6 +235,7 @@ const AppRoutes = () => {
           <Route path="classes/edit/:id" element={<AdminClassFormPage />} />
           <Route path="students" element={<AdminStudentsPage />} />
           <Route path="attendance" element={<AdminAttendancePage />} />
+          <Route path="registrations" element={<AdminRegistrationsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
           <Route path="cities/new" element={<AdminCityFormPage />} />
           <Route path="cities" element={<AdminCitiesPage />} />

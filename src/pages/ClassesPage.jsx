@@ -611,12 +611,6 @@ const ClassesPage = () => {
                     )}
                 </AnimatePresence>
 
-                {/* Page Footer */}
-                <footer className="bg-slate-800 text-slate-400 py-8 mt-16 w-full">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
-                        &copy; {new Date().getFullYear()} StandStrong Self-Defense. All rights reserved. | Serving {selectedCity} and surrounding areas.
-                    </div>
-                </footer>
 
             </motion.div> {/* Close the motion.div with max-w-7xl class */}
         </div> /* Close the div with bg-slate-50 class */
