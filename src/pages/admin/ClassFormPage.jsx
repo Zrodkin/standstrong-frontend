@@ -106,9 +106,9 @@ const ClassFormPage = () => {
     }
   };
   
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+// Handle input changes
+const handleChange = (e) => {
+  const { name, value } = e.target;
 
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
@@ -129,86 +129,107 @@ const ClassFormPage = () => {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-  };
-  // Handle schedule changes
-  const handleScheduleChange = (index, field, value) => {
-    const newSchedule = [...formData.schedule];
-    newSchedule[index][field] = value;
-    setFormData((prev) => ({ ...prev, schedule: newSchedule }));
-  };
+};
 
-  // Add a new empty session manually
-  const addScheduleSession = () => {
-    setFormData((prev) => ({
-      ...prev,
-      schedule: [...prev.schedule, { date: '', startTime: '', endTime: '' }]
-    }));
-  };
+ // --- NEW: Function to process the link on Blur ---
+ const handleLinkBlur = (e) => {
+  // Get the current value directly from the state, as handleChange updated it
+  const currentValue = formData.externalRegistrationLink;
+  let processedValue = currentValue.trim(); // Remove leading/trailing whitespace
 
-  // Remove a session
-  const removeScheduleSession = (index) => {
-    const newSchedule = [...formData.schedule];
-    newSchedule.splice(index, 1);
-    setFormData((prev) => ({ ...prev, schedule: newSchedule }));
-  };
+  // Check if the link is not empty and doesn't already have a protocol
+  if (processedValue && !processedValue.startsWith('http://') && !processedValue.startsWith('https://')) {
+    // Prepend https:// if protocol is missing
+    processedValue = `https://${processedValue}`;
+    // Update state specifically for this field if it changed
+    if (processedValue !== currentValue) {
+       setFormData((prev) => ({ ...prev, externalRegistrationLink: processedValue }));
+    }
+  }
+   // Optional: If the value IS empty after trimming, ensure state is empty string
+   else if (!processedValue && currentValue) {
+       setFormData((prev) => ({ ...prev, externalRegistrationLink: '' }));
+   }
+};
 
-  const generateRepeatedSessions = () => {
-    if (!repeatSettings.startDate || !repeatSettings.numberOfClasses || !repeatSettings.startTime || !repeatSettings.endTime) {
-      console.error('Missing fields for generating sessions');
+// Handle schedule changes
+const handleScheduleChange = (index, field, value) => {
+  const newSchedule = [...formData.schedule];
+  newSchedule[index][field] = value;
+  setFormData((prev) => ({ ...prev, schedule: newSchedule }));
+};
+
+// Add a new empty session manually
+const addScheduleSession = () => {
+  setFormData((prev) => ({
+    ...prev,
+    schedule: [...prev.schedule, { date: '', startTime: '', endTime: '' }]
+  }));
+};
+
+// Remove a session
+const removeScheduleSession = (index) => {
+  const newSchedule = [...formData.schedule];
+  newSchedule.splice(index, 1);
+  setFormData((prev) => ({ ...prev, schedule: newSchedule }));
+};
+
+const generateRepeatedSessions = () => {
+  if (!repeatSettings.startDate || !repeatSettings.numberOfClasses || !repeatSettings.startTime || !repeatSettings.endTime) {
+    console.error('Missing fields for generating sessions');
+    return;
+  }
+
+  const sessions = [];
+  let current = new Date(repeatSettings.startDate);
+
+  for (let i = 0; i < repeatSettings.numberOfClasses; i++) {
+    sessions.push({
+      date: formatDateForInput(current),
+      startTime: repeatSettings.startTime,
+      endTime: repeatSettings.endTime,
+    });
+
+    current.setDate(current.getDate() + 7); // Add 7 days each time
+  }
+
+  setFormData((prev) => ({ ...prev, schedule: sessions }));
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    setLoading(true);
+    setError(null);
+
+    if (!formData.title || !formData.city || !formData.location.address) {
+      setError('Please fill out all required fields.');
+      setLoading(false);
       return;
     }
-  
-    const sessions = [];
-    let current = new Date(repeatSettings.startDate);
-  
-    for (let i = 0; i < repeatSettings.numberOfClasses; i++) {
-      sessions.push({
-        date: formatDateForInput(current),
-        startTime: repeatSettings.startTime,
-        endTime: repeatSettings.endTime,
-      });
-  
-      current.setDate(current.getDate() + 7); // Add 7 days each time
+
+    const formattedData = { ...formData };
+
+    // If no max age, remove it
+    if (!hasMaxAge) {
+      formattedData.targetAgeRange.max = undefined;
     }
-  
-    setFormData((prev) => ({ ...prev, schedule: sessions }));
-  };
 
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (!formData.title || !formData.city || !formData.location.address) {
-        setError('Please fill out all required fields.');
-        setLoading(false);
-        return;
-      }
-
-      const formattedData = { ...formData };
-
-      // If no max age, remove it
-      if (!hasMaxAge) {
-        formattedData.targetAgeRange.max = undefined;
-      }
-
-      if (isEditMode) {
-        await updateClass(id, formattedData);
-      } else {
-        await createClass(formattedData);
-      }
-
-      navigate('/admin/classes');
-    } catch (err) {
-      console.error(err);
-      setError('Failed to save class.');
-    } finally {
-      setLoading(false);
+    if (isEditMode) {
+      await updateClass(id, formattedData);
+    } else {
+      await createClass(formattedData);
     }
-  };
+
+    navigate('/admin/classes');
+  } catch (err) {
+    console.error(err);
+    setError('Failed to save class.');
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -376,18 +397,19 @@ const ClassFormPage = () => {
             </div>
 
             {formData.registrationType === 'external' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Partner Registration URL</label>
-                <input
-                  type="url"
-                  name="externalRegistrationLink"
-                  value={formData.externalRegistrationLink}
-                  onChange={handleChange}
-                  placeholder="https://partnerwebsite.com/register"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Partner Registration URL</label>
+              <input
+                type="url"
+                name="externalRegistrationLink"
+                value={formData.externalRegistrationLink}
+                onChange={handleChange} // Keep the original onChange
+                onBlur={handleLinkBlur}   // <---- ADD THIS LINE
+                placeholder="partnerwebsite.com/register" // <-- Optional: Changed placeholder
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              />
+            </div>
+          )}
           </div>
 
           {/* Upload Partner Logo */}
