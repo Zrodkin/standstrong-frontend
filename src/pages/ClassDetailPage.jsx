@@ -1,443 +1,614 @@
+"use client"
+
 // frontend/pages/ClassDetailPage.jsx
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from "react"
+import { useParams, Link, useNavigate } from "react-router-dom"
+import { motion, AnimatePresence } from "framer-motion"
 import {
-  FiArrowLeft, FiMapPin, FiCalendar, FiClock, FiUsers,
-  FiDollarSign, FiUserCheck, FiExternalLink, FiHome, FiInfo,
-  FiAlertCircle, FiCheckCircle, FiX, FiLoader
-} from 'react-icons/fi';
-import { useAuth } from '/src/context/AuthContext.jsx';
-import { format } from 'date-fns';
-import nprogress from 'nprogress';
-import 'nprogress/nprogress.css';
+  FiArrowLeft,
+  FiMapPin,
+  FiCalendar,
+  FiClock,
+  FiUsers,
+  FiDollarSign,
+  FiUserCheck,
+  FiExternalLink,
+  FiHome,
+  FiInfo,
+  FiAlertCircle,
+  FiCheckCircle,
+  FiX,
+  FiLoader,
+  FiBookOpen,
+  FiChevronRight,
+} from "react-icons/fi"
+import { useAuth } from "/src/context/AuthContext.jsx"
+import { format } from "date-fns"
+import nprogress from "nprogress"
+import "nprogress/nprogress.css"
 
 // --- Import Services Directly ---
-import { getClassById } from '/src/services/classService.js';
-import { createRegistration, getMyRegistrations } from '/src/services/registrationService.js';
+import { getClassById } from "/src/services/classService.js"
+import { createRegistration, getMyRegistrations } from "/src/services/registrationService.js"
 
 // --- Reusable Components ---
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-    <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-    <p className="text-lg font-semibold text-slate-700">Loading Class Details</p>
-    <p className="text-sm text-slate-500">Please wait a moment...</p>
+    <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mb-6"></div>
+    <p className="text-xl font-semibold text-gray-800">Loading Class Details</p>
+    <p className="text-sm text-gray-500 mt-2">Please wait a moment...</p>
   </div>
-);
+)
 
 const ErrorMessage = ({ message, onRetry }) => (
-  <div className="bg-red-50 border border-red-200 p-6 rounded-lg flex flex-col items-center text-center max-w-md mx-auto my-10 shadow-sm">
-    <FiAlertCircle className="h-12 w-12 text-red-500 mb-4" />
-    <p className="text-lg font-semibold text-red-800 mb-2">{message || 'An error occurred.'}</p>
-    <p className="text-sm text-slate-600 mb-6">We couldn't load the class details. Please check your connection or try again.</p>
+  <div className="bg-red-50 border border-red-200 p-8 rounded-xl flex flex-col items-center text-center max-w-md mx-auto my-10 shadow-md">
+    <FiAlertCircle className="h-14 w-14 text-red-500 mb-4" />
+    <p className="text-xl font-semibold text-red-800 mb-2">{message || "An error occurred."}</p>
+    <p className="text-sm text-gray-600 mb-6">
+      We couldn't load the class details. Please check your connection or try again.
+    </p>
     {onRetry && (
       <button
         onClick={onRetry}
-        className="px-5 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-medium flex items-center"
+        className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm font-medium flex items-center shadow-sm"
       >
         <FiArrowLeft className="mr-2 h-4 w-4" /> Try Again
       </button>
     )}
-    <Link to="/classes" className="mt-4 text-sm text-blue-600 hover:underline">
+    <Link to="/classes" className="mt-4 text-sm text-primary-600 hover:underline">
       Back to Classes
     </Link>
   </div>
-);
+)
+
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, classTitle, isLoading }) => {
-  if (!isOpen) return null;
+  if (!isOpen) return null
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-6 sm:p-8">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Confirm Registration</h2>
-              <button onClick={onClose} disabled={isLoading} className="text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50" aria-label="Close modal">
+              <h2 className="text-2xl font-bold text-gray-800">Confirm Registration</h2>
+              <button
+                onClick={onClose}
+                disabled={isLoading}
+                className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                aria-label="Close modal"
+              >
                 <FiX size={24} />
               </button>
             </div>
-            <p className="text-slate-600 mb-6">
-              You are about to register for the class: <strong className="text-slate-800">{classTitle}</strong>. Please confirm to proceed.
+            <p className="text-gray-600 mb-6">
+              You are about to register for the class: <strong className="text-gray-800">{classTitle}</strong>. Please
+              confirm to proceed.
             </p>
             <div className="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3">
-              <button onClick={onClose} disabled={isLoading} className="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-100 transition-colors w-full sm:w-auto disabled:opacity-50">
+              <button
+                onClick={onClose}
+                disabled={isLoading}
+                className="px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors w-full sm:w-auto disabled:opacity-50 font-medium"
+              >
                 Cancel
               </button>
-              <button onClick={onConfirm} disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors w-full sm:w-auto flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                {isLoading ? (<><FiLoader className="animate-spin mr-2" /> Registering...</>) : ('Confirm Registration')}
+              <button
+                onClick={onConfirm}
+                disabled={isLoading}
+                className="px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors w-full sm:w-auto flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
+              >
+                {isLoading ? (
+                  <>
+                    <FiLoader className="animate-spin mr-2" /> Registering...
+                  </>
+                ) : (
+                  "Confirm Registration"
+                )}
               </button>
             </div>
           </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  );
-};
-const ClassDetailPage = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { currentUser, isAuthenticated } = useAuth();
+  )
+}
 
-  const [classData, setClassData] = useState(null);
-  const [myRegistrations, setMyRegistrations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMyRegs, setLoadingMyRegs] = useState(true);
-  const [error, setError] = useState(null);
-  const [registering, setRegistering] = useState(false);
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [registerSuccess, setRegisterSuccess] = useState(false);
-  const [registerError, setRegisterError] = useState(null);
+// Tab component for content organization
+const TabButton = ({ active, onClick, icon, children }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+      active ? "bg-primary-50 text-primary-700 border-primary-200 border" : "text-gray-600 hover:bg-gray-100"
+    }`}
+  >
+    {icon}
+    <span className="ml-2">{children}</span>
+  </button>
+)
+
+const ClassDetailPage = () => {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { currentUser, isAuthenticated } = useAuth()
+
+  const [classData, setClassData] = useState(null)
+  const [myRegistrations, setMyRegistrations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadingMyRegs, setLoadingMyRegs] = useState(true)
+  const [error, setError] = useState(null)
+  const [registering, setRegistering] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
+  const [registerSuccess, setRegisterSuccess] = useState(false)
+  const [registerError, setRegisterError] = useState(null)
+  const [activeTab, setActiveTab] = useState("about")
 
   // --- Fetch Class ---
   const fetchClassData = useCallback(async () => {
-    setError(null);
-    setRegisterSuccess(false);
-    setRegisterError(null);
-    setLoading(true);
-    nprogress.start();
+    setError(null)
+    setRegisterSuccess(false)
+    setRegisterError(null)
+    setLoading(true)
+    nprogress.start()
     try {
-      const data = await getClassById(id);
-      setClassData(data);
+      const data = await getClassById(id)
+      setClassData(data)
     } catch (err) {
-      console.error("Fetch Class Error:", err);
-      setError(err.response?.data?.message || 'Failed to load class details. Please try again.');
+      console.error("Fetch Class Error:", err)
+      setError(err.response?.data?.message || "Failed to load class details. Please try again.")
     } finally {
-      setLoading(false);
-      nprogress.done();
+      setLoading(false)
+      nprogress.done()
     }
-  }, [id]);
+  }, [id])
 
   const fetchUserRegistrations = useCallback(async () => {
     if (!isAuthenticated) {
-      setMyRegistrations([]);
-      setLoadingMyRegs(false);
-      return;
+      setMyRegistrations([])
+      setLoadingMyRegs(false)
+      return
     }
-    setLoadingMyRegs(true);
+    setLoadingMyRegs(true)
     try {
-      const regs = await getMyRegistrations();
-      setMyRegistrations(regs || []);
+      const regs = await getMyRegistrations()
+      setMyRegistrations(regs || [])
     } catch (err) {
-      console.error("Failed to fetch user registrations", err);
-      setMyRegistrations([]);
+      console.error("Failed to fetch user registrations", err)
+      setMyRegistrations([])
     } finally {
-      setLoadingMyRegs(false);
+      setLoadingMyRegs(false)
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated])
 
   useEffect(() => {
-    fetchClassData();
-    fetchUserRegistrations();
-  }, [id, fetchClassData, fetchUserRegistrations]);
+    fetchClassData()
+    fetchUserRegistrations()
+  }, [id, fetchClassData, fetchUserRegistrations])
+
   // --- Image Helpers ---
   const getFullImageUrl = (partialUrl) => {
-    if (!partialUrl) return '';
-    if (partialUrl.startsWith('http')) return partialUrl;
-    const apiBaseUrl = import.meta.env.VITE_API_URL || '';
-    const formattedPartialUrl = partialUrl.startsWith('/') ? partialUrl : `/${partialUrl}`;
-    if (!apiBaseUrl || apiBaseUrl === '/') return formattedPartialUrl;
-    if (apiBaseUrl.endsWith('/')) return `${apiBaseUrl.slice(0, -1)}${formattedPartialUrl}`;
-    return `${apiBaseUrl}${formattedPartialUrl}`;
-  };
+    if (!partialUrl) return ""
+    if (partialUrl.startsWith("http")) return partialUrl
+    const apiBaseUrl = import.meta.env.VITE_API_URL || ""
+    const formattedPartialUrl = partialUrl.startsWith("/") ? partialUrl : `/${partialUrl}`
+    if (!apiBaseUrl || apiBaseUrl === "/") return formattedPartialUrl
+    if (apiBaseUrl.endsWith("/")) return `${apiBaseUrl.slice(0, -1)}${formattedPartialUrl}`
+    return `${apiBaseUrl}${formattedPartialUrl}`
+  }
 
   const handleImageError = (e) => {
-    console.warn('Failed to load image:', e.target.src);
+    console.warn("Failed to load image:", e.target.src)
     if (!e.target.dataset.fallbackAttempted && classData?.partnerLogo) {
-      const fallbackUrl = classData.partnerLogo.startsWith('/') ? classData.partnerLogo : `/${classData.partnerLogo}`;
-      e.target.src = fallbackUrl;
-      e.target.dataset.fallbackAttempted = 'true';
+      const fallbackUrl = classData.partnerLogo.startsWith("/") ? classData.partnerLogo : `/${classData.partnerLogo}`
+      e.target.src = fallbackUrl
+      e.target.dataset.fallbackAttempted = "true"
     } else {
-      console.warn('Fallback failed or no logo path, hiding image element.');
-      e.target.style.display = 'none';
+      console.warn("Fallback failed or no logo path, hiding image element.")
+      e.target.style.display = "none"
     }
-  };
+  }
 
   // --- Registration ---
   const handleOpenConfirmation = () => {
     if (!isAuthenticated) {
-      navigate(`/login?redirect=/classes/${id}`);
-      return;
+      navigate(`/login?redirect=/classes/${id}`)
+      return
     }
-    setRegisterError(null);
-    setRegisterSuccess(false);
-    setIsConfirming(true);
-  };
+    setRegisterError(null)
+    setRegisterSuccess(false)
+    setIsConfirming(true)
+  }
 
   const handleConfirmRegister = async () => {
-    if (!isAuthenticated) return;
-    setRegistering(true);
-    setRegisterError(null);
-    nprogress.start();
+    if (!isAuthenticated) return
+    setRegistering(true)
+    setRegisterError(null)
+    nprogress.start()
     try {
-      await createRegistration(id);
-      setRegisterSuccess(true);
-      setIsConfirming(false);
-      fetchUserRegistrations();
+      await createRegistration(id)
+      setRegisterSuccess(true)
+      setIsConfirming(false)
+      fetchUserRegistrations()
     } catch (err) {
-      console.error("Registration Error:", err);
+      console.error("Registration Error:", err)
       if (err.response?.status === 409) {
-        setRegisterError(err.response?.data?.message || 'Registration conflict. Class may be full.');
+        setRegisterError(err.response?.data?.message || "Registration conflict. Class may be full.")
       } else {
-        setRegisterError(err.response?.data?.message || 'Registration failed. Please try again.');
+        setRegisterError(err.response?.data?.message || "Registration failed. Please try again.")
       }
-      setIsConfirming(false);
+      setIsConfirming(false)
     } finally {
-      setRegistering(false);
-      nprogress.done();
+      setRegistering(false)
+      nprogress.done()
     }
-  };
+  }
+
   // --- Helpers ---
   const isUserRegistered = useCallback(() => {
-    if (!isAuthenticated || loadingMyRegs || !classData) return false;
+    if (!isAuthenticated || loadingMyRegs || !classData) return false
     return myRegistrations.some(
-      reg => reg.class?._id === classData._id &&
-             (reg.status === 'enrolled' || reg.status === 'waitlisted')
-    );
-  }, [isAuthenticated, loadingMyRegs, myRegistrations, classData]);
+      (reg) => reg.class?._id === classData._id && (reg.status === "enrolled" || reg.status === "waitlisted"),
+    )
+  }, [isAuthenticated, loadingMyRegs, myRegistrations, classData])
 
   const formatTime = (timeStr) => {
-    if (!timeStr) return 'TBD';
+    if (!timeStr) return "TBD"
     try {
-      const [hour, minute] = timeStr.split(':').map(Number);
-      const date = new Date();
-      date.setHours(hour, minute);
-      return format(date, 'h:mm a');
+      const [hour, minute] = timeStr.split(":").map(Number)
+      const date = new Date()
+      date.setHours(hour, minute)
+      return format(date, "h:mm a")
     } catch (e) {
-      console.error("Error formatting time:", timeStr, e);
-      return 'Invalid time';
+      console.error("Error formatting time:", timeStr, e)
+      return "Invalid time"
     }
-  };
+  }
 
   const googleMapsUrl = classData?.location?.address
     ? `https://maps.google.com/?q=${encodeURIComponent(classData.location.address)}`
-    : null;
+    : null
 
   // --- Render ---
   if (loading || loadingMyRegs) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner />
   }
 
   if (error) {
-    return <ErrorMessage message={error} onRetry={fetchClassData} />;
+    return <ErrorMessage message={error} onRetry={fetchClassData} />
   }
 
   if (!classData) {
-    return <ErrorMessage message="Class not found or could not be loaded." onRetry={() => navigate('/classes')} />;
+    return <ErrorMessage message="Class not found or could not be loaded." onRetry={() => navigate("/classes")} />
   }
 
-  const alreadyRegistered = isUserRegistered();
-  const isExternal = classData.registrationType === 'external';
-  const schedule = classData.schedule || [];
+  const alreadyRegistered = isUserRegistered()
+  const isExternal = classData.registrationType === "external"
+  const schedule = classData.schedule || []
+
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-slate-200">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center space-x-2 text-sm">
-          <Link to="/" className="text-slate-500 hover:text-blue-600 flex items-center">
+          <Link to="/" className="text-gray-500 hover:text-primary-600 flex items-center">
             <FiHome className="mr-1.5 h-4 w-4" /> Home
           </Link>
-          <span className="text-slate-300">/</span>
-          <Link to="/classes" className="text-slate-500 hover:text-blue-600">Classes</Link>
-          <span className="text-slate-300">/</span>
-          <span className="text-slate-700 font-medium truncate" title={classData.title}>
+          <span className="text-gray-300">/</span>
+          <Link to="/classes" className="text-gray-500 hover:text-primary-600">
+            Classes
+          </Link>
+          <span className="text-gray-300">/</span>
+          <span className="text-gray-700 font-medium truncate" title={classData.title}>
             {classData.title}
           </span>
         </nav>
       </div>
 
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-16 sm:py-20 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-violet-600 to-indigo-700 text-white py-16 sm:py-24 overflow-hidden">
         {classData.imageUrl && (
-          <img
-            src={getFullImageUrl(classData.imageUrl)}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
-            onError={handleImageError}
-          />
+          <div className="absolute inset-0 w-full h-full">
+            <img
+              src={getFullImageUrl(classData.imageUrl) || "/placeholder.svg"}
+              alt=""
+              className="w-full h-full object-cover opacity-20"
+              onError={handleImageError}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-600/80 to-indigo-700/80 mix-blend-multiply" />
+          </div>
         )}
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-          <motion.h1
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-extrabold tracking-tight"
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-8"
           >
-            {classData.title}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mt-4 text-lg text-blue-100 max-w-2xl mx-auto"
-          >
-            Led by: <span className="font-semibold">{classData.instructor?.name || 'Instructor TBD'}</span>
-          </motion.p>
-          {classData.partnerLogo && (
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="mt-8 inline-block bg-white p-2 rounded-lg shadow-md max-h-24"
-            >
-              <img
-                src={getFullImageUrl(classData.partnerLogo)}
-                alt={`${classData.partnerName || 'Partner'} Logo`}
-                className="h-16 sm:h-20 object-contain"
-                onError={handleImageError}
-              />
-            </motion.div>
-          )}
+            <div className="space-y-4 max-w-3xl">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white">
+                {classData.targetGender === "male" && "Men's Class"}
+                {classData.targetGender === "female" && "Women's Class"}
+                {classData.targetGender === "any" && "Open to All (Co-ed)"}
+              </span>
+
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{classData.title}</h1>
+
+              <div className="flex items-center gap-3 mt-2">
+                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+                  {classData.instructor?.name?.charAt(0) || "I"}
+                </div>
+                <div>
+                  <p className="text-white/80 text-sm">Instructor</p>
+                  <p className="font-medium">{classData.instructor?.name || "Instructor TBD"}</p>
+                </div>
+              </div>
+            </div>
+
+            {classData.partnerLogo && (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="bg-white p-3 rounded-xl shadow-xl max-h-24 self-start"
+              >
+                <img
+                  src={getFullImageUrl(classData.partnerLogo) || "/placeholder.svg"}
+                  alt={`${classData.partnerName || "Partner"} Logo`}
+                  className="h-16 sm:h-20 object-contain"
+                  onError={handleImageError}
+                />
+              </motion.div>
+            )}
+          </motion.div>
         </div>
       </div>
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="lg:grid lg:grid-cols-3 lg:gap-x-12 gap-y-10">
-          
           {/* Left Column */}
-          <div className="lg:col-span-2 space-y-10">
-            {/* About Section */}
-            <section>
-              <h2 className="text-2xl font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">
-                About This Class
-              </h2>
-              <div className="prose prose-lg prose-slate max-w-none text-slate-700">
-                <p>{classData.description || "No description provided."}</p>
-              </div>
-            </section>
-
-            {/* Schedule Section */}
-            <section>
-              <h2 className="text-2xl font-bold text-slate-800 mb-5 border-b border-slate-200 pb-2">
+          <div className="lg:col-span-2 space-y-8">
+            {/* Tabs */}
+            <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
+              <TabButton
+                active={activeTab === "about"}
+                onClick={() => setActiveTab("about")}
+                icon={<FiBookOpen className="h-4 w-4" />}
+              >
+                About
+              </TabButton>
+              <TabButton
+                active={activeTab === "schedule"}
+                onClick={() => setActiveTab("schedule")}
+                icon={<FiCalendar className="h-4 w-4" />}
+              >
                 Schedule
-              </h2>
-              {schedule.length > 0 ? (
-                <ul className="space-y-5">
-                  {schedule.map((session, idx) => (
-                    <li key={idx} className="flex items-start space-x-4 p-4 bg-white rounded-lg border border-slate-100 shadow-sm">
-                      <FiCalendar className="text-blue-500 mt-1 flex-shrink-0 h-5 w-5" />
+              </TabButton>
+              {classData.instructor?.bio && (
+                <TabButton
+                  active={activeTab === "instructor"}
+                  onClick={() => setActiveTab("instructor")}
+                  icon={<FiUserCheck className="h-4 w-4" />}
+                >
+                  Instructor
+                </TabButton>
+              )}
+            </div>
+
+            {/* Tab Content */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              {/* About Tab */}
+              {activeTab === "about" && (
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Class</h2>
+                  <div className="prose prose-lg max-w-none text-gray-700">
+                    <p>{classData.description || "No description provided."}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Schedule Tab */}
+              {activeTab === "schedule" && (
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">Class Schedule</h2>
+                    {schedule.length > 0 && (
+                      <span className="text-sm text-gray-500">
+                        {schedule.length} session{schedule.length > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
+
+                  {schedule.length > 0 ? (
+                    <div className="space-y-4">
+                      {schedule.map((session, idx) => (
+                        <div key={idx} className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                          <div className="flex-shrink-0 w-14 h-14 bg-primary-50 rounded-lg flex flex-col items-center justify-center text-primary-700">
+                            <span className="text-xs font-medium">{format(new Date(session.date), "MMM")}</span>
+                            <span className="text-xl font-bold">{format(new Date(session.date), "d")}</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {format(new Date(session.date), "EEEE, MMMM d, yyyy")}
+                            </p>
+                            <div className="flex items-center mt-1 text-sm text-gray-600">
+                              <FiClock className="mr-1.5 h-3.5 w-3.5" />
+                              {formatTime(session.startTime)} - {formatTime(session.endTime)}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-3 bg-blue-50 p-4 rounded-md border border-blue-100">
+                      <FiInfo className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                      <p className="text-sm text-blue-700">
+                        Schedule details are not yet available. Please check back later.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Instructor Tab */}
+              {activeTab === "instructor" && classData.instructor?.bio && (
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">About the Instructor</h2>
+                  <div className="flex flex-col sm:flex-row gap-6">
+                    <div className="h-24 w-24 rounded-lg bg-gray-200 flex items-center justify-center text-gray-500 text-2xl font-bold">
+                      {classData.instructor?.imageUrl ? (
+                        <img
+                          src={getFullImageUrl(classData.instructor.imageUrl) || "/placeholder.svg"}
+                          alt={classData.instructor.name}
+                          className="w-full h-full object-cover rounded-lg"
+                          onError={(e) => {
+                            e.target.style.display = "none"
+                            e.target.parentNode.textContent = classData.instructor.name.charAt(0)
+                          }}
+                        />
+                      ) : (
+                        classData.instructor.name.charAt(0)
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">{classData.instructor.name}</h3>
+                      <p className="text-gray-600">{classData.instructor.bio}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="mt-10 lg:mt-0">
+            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 lg:sticky lg:top-6 space-y-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-5 pb-2 border-b border-gray-100">Class Details</h3>
+
+              {/* Success/Error Messages */}
+              {registerSuccess && (
+                <div className="flex items-center bg-green-50 p-4 rounded-lg text-green-800 mb-4 border border-green-200">
+                  <FiCheckCircle className="h-5 w-5 mr-3 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Successfully Registered!</p>
+                    <p className="text-sm text-green-700 mt-0.5">You're all set for this class.</p>
+                  </div>
+                </div>
+              )}
+
+              {registerError && (
+                <div className="flex items-center bg-red-50 p-4 rounded-lg text-red-800 mb-4 border border-red-200">
+                  <FiAlertCircle className="h-5 w-5 mr-3 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Registration Failed</p>
+                    <p className="text-sm text-red-700 mt-0.5">{registerError}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Class Details */}
+              <div className="space-y-5">
+                {/* Location */}
+                <div className="flex gap-4">
+                  <FiMapPin className="text-primary-600 mt-1 flex-shrink-0 h-5 w-5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Location</p>
+                    {classData.location?.name ? (
+                      <>
+                        <p className="text-gray-800 font-medium">{classData.location.name}</p>
+                        {classData.location?.address && (
+                          <p className="text-sm text-gray-600">{classData.location.address}</p>
+                        )}
+                      </>
+                    ) : classData.location?.address ? (
+                      <p className="text-gray-800 font-medium">{classData.location.address}</p>
+                    ) : (
+                      <p className="text-gray-500 italic">Location To Be Announced</p>
+                    )}
+                    {googleMapsUrl && (
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center mt-1.5 text-sm text-primary-600 hover:text-primary-800 font-medium"
+                      >
+                        View on Google Maps <FiExternalLink className="ml-1 h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <hr className="border-gray-100" />
+
+                {/* First Session */}
+                {schedule.length > 0 && (
+                  <>
+                    <div className="flex gap-4">
+                      <FiCalendar className="text-primary-600 mt-1 flex-shrink-0 h-5 w-5" />
                       <div>
-                        <p className="text-slate-900 font-semibold">
-                          {format(new Date(session.date), 'EEEE, MMMM d, yyyy')}
+                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">First Session</p>
+                        <p className="text-gray-800 font-medium">
+                          {format(new Date(schedule[0].date), "MMMM d, yyyy")}
                         </p>
-                        <p className="text-slate-600 text-sm">
-                          {formatTime(session.startTime)} - {formatTime(session.endTime)}
+                        <p className="text-sm text-gray-600">
+                          {formatTime(schedule[0].startTime)} - {formatTime(schedule[0].endTime)}
                         </p>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="flex items-center space-x-3 bg-blue-50 p-4 rounded-md border border-blue-100">
-                  <FiInfo className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                  <p className="text-sm text-blue-700">Schedule details are not yet available. Please check back later.</p>
-                </div>
-              )}
-            </section>
-          </div>
-          {/* Right Column */}
-          <div className="lg:sticky lg:top-6 space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 space-y-5">
-              <h3 className="text-xl font-bold text-slate-800 mb-5 border-b border-slate-200 pb-2">
-                Class Details
-              </h3>
+                    </div>
+                    <hr className="border-gray-100" />
+                  </>
+                )}
 
-              {/* Location */}
-              <div className="flex items-start space-x-4">
-                <FiMapPin className="text-blue-500 mt-1 flex-shrink-0 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Location</p>
-                  {classData.location?.name ? (
-                    <>
-                      <p className="text-slate-800 font-medium">{classData.location.name}</p>
-                      {classData.location?.address && (
-                        <p className="text-sm text-slate-600">{classData.location.address}</p>
-                      )}
-                    </>
-                  ) : classData.location?.address ? (
-                    <p className="text-slate-800 font-medium">{classData.location.address}</p>
-                  ) : (
-                    <p className="text-slate-500 italic">Location To Be Announced</p>
-                  )}
-                  {googleMapsUrl && (
-                    <a
-                      href={googleMapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block mt-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
-                    >
-                      View on Google Maps <FiExternalLink className="inline ml-1 h-3 w-3" />
-                    </a>
-                  )}
-                </div>
-              </div>
-              <hr className="border-slate-100" />
-
-              {/* Audience */}
-              <div className="flex items-start space-x-4">
-                <FiUsers className="text-blue-500 mt-1 flex-shrink-0 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Audience</p>
-                  <p className="text-slate-800 font-medium">
-                    {classData.targetGender === 'male' && "Men's Class"}
-                    {classData.targetGender === 'female' && "Women's Class"}
-                    {classData.targetGender === 'any' && "Open to All (Co-ed)"}
-                  </p>
-                </div>
-              </div>
-              <hr className="border-slate-100" />
-              {/* Cost */}
-              <div className="flex items-start space-x-4">
-                <FiDollarSign className="text-blue-500 mt-1 flex-shrink-0 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Cost</p>
-                  <p className="text-slate-800 font-bold">
-                    {classData.cost === 0 ? 'Free' : `$${classData.cost}`}
-                  </p>
-                </div>
-              </div>
-              <hr className="border-slate-100" />
-
-              {/* Capacity */}
-              {classData.capacity != null && (
-                <div className="flex items-start space-x-4">
-                  <FiUsers className="text-blue-500 mt-1 flex-shrink-0 h-5 w-5" />
+                {/* Audience */}
+                <div className="flex gap-4">
+                  <FiUsers className="text-primary-600 mt-1 flex-shrink-0 h-5 w-5" />
                   <div>
-                    <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Capacity</p>
-                    <p className="text-slate-800 font-medium">{classData.capacity} students</p>
+                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Audience</p>
+                    <p className="text-gray-800 font-medium">
+                      {classData.targetGender === "male" && "Men's Class"}
+                      {classData.targetGender === "female" && "Women's Class"}
+                      {classData.targetGender === "any" && "Open to All (Co-ed)"}
+                    </p>
+                    {classData.capacity != null && (
+                      <p className="text-sm text-gray-600">Limited to {classData.capacity} participants</p>
+                    )}
                   </div>
                 </div>
-              )}
+                <hr className="border-gray-100" />
+
+                {/* Cost */}
+                <div className="flex gap-4">
+                  <FiDollarSign className="text-primary-600 mt-1 flex-shrink-0 h-5 w-5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Cost</p>
+                    <p className="text-xl font-bold text-gray-800">
+                      {classData.cost === 0 ? "Free" : `$${classData.cost}`}
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               {/* Registration Section */}
-              <div className="pt-5">
-                {registerSuccess && (
-                  <div className="flex items-center bg-green-50 p-3 rounded-md text-green-800 mb-4 border border-green-200 text-sm">
-                    <FiCheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-                    Successfully Registered! You're all set.
-                  </div>
-                )}
-                {registerError && (
-                  <div className="flex items-center bg-red-50 p-3 rounded-md text-red-800 mb-4 border border-red-200 text-sm">
-                    <FiAlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-                    {registerError}
-                  </div>
-                )}
-
+              <div className="pt-5 mt-6 border-t border-gray-100">
                 {alreadyRegistered ? (
-                  <div className="text-center bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <FiUserCheck className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                    <p className="font-semibold text-blue-800">You are registered for this class!</p>
-                    <Link to="/dashboard" className="mt-2 inline-block text-sm text-blue-600 hover:underline font-medium">
-                      View in Dashboard
+                  <div className="text-center bg-primary-50 p-5 rounded-lg border border-primary-100">
+                    <FiUserCheck className="h-8 w-8 mx-auto mb-2 text-primary-600" />
+                    <p className="font-semibold text-primary-800">You are registered for this class!</p>
+                    <Link
+                      to="/dashboard"
+                      className="mt-2 inline-block text-sm text-primary-600 hover:underline font-medium"
+                    >
+                      View in Dashboard <FiChevronRight className="inline ml-1 h-3 w-3" />
                     </Link>
                   </div>
                 ) : isExternal ? (
@@ -445,18 +616,18 @@ const ClassDetailPage = () => {
                     href={classData.externalRegistrationLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                    className="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
                   >
-                    Register on Partner Site <FiExternalLink className="ml-2 h-4 w-4"/>
+                    Register on Partner Site <FiExternalLink className="ml-2 h-4 w-4" />
                   </a>
                 ) : (
                   <button
                     type="button"
                     onClick={handleOpenConfirmation}
                     disabled={isConfirming || registering}
-                    className="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full inline-flex justify-center items-center px-6 py-3.5 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {isAuthenticated ? 'Register for Class' : 'Login to Register'}
+                    {isAuthenticated ? "Register for Class" : "Login to Register"}
                   </button>
                 )}
               </div>
@@ -470,18 +641,18 @@ const ClassDetailPage = () => {
         isOpen={isConfirming}
         onClose={() => setIsConfirming(false)}
         onConfirm={handleConfirmRegister}
-        classTitle={classData?.title || ''}
+        classTitle={classData?.title || ""}
         isLoading={registering}
       />
 
       {/* Footer */}
-      <footer className="bg-slate-800 text-slate-400 text-center py-8 mt-16 sm:mt-24 border-t border-slate-700">
+      <footer className="bg-gray-900 text-gray-400 text-center py-8 mt-16 sm:mt-24 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm">
-          © {new Date().getFullYear()} StandStrong . All rights reserved.
+          © {new Date().getFullYear()} StandStrong. All rights reserved.
         </div>
       </footer>
     </div>
-  );
-};
+  )
+}
 
-export default ClassDetailPage;
+export default ClassDetailPage

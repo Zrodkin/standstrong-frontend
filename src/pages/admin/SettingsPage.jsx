@@ -1,150 +1,1300 @@
-// D:/StandStrong/frontend/src/pages/admin/AdminSettingsPage.jsx
-import React, { useState } from 'react';
-// Import necessary services for settings later, e.g.:
-// import { getSettings, updateSettings } from '../../services/settingService';
-import { FiSave, FiLoader, FiSettings } from 'react-icons/fi';
+// src/pages/admin/StudentsPage.jsx
+import { useState, useEffect, useCallback } from "react"
+import {
+  FiUsers,
+  FiSearch,
+  FiMapPin,
+  FiCalendar,
+  FiDownload,
+  FiEdit,
+  FiTrash2,
+  FiEye,
+  FiChevronDown,
+  FiChevronUp,
+  FiX,
+  FiCheck,
+  FiAlertCircle,
+  FiLoader,
+  FiMail,
+  FiPhone,
+  FiClock,
+  FiGrid,
+  FiList,
+  FiRefreshCw,
+  FiUserPlus,
+  FiInfo,
+} from "react-icons/fi"
+import { format } from "date-fns"
 
-const AdminSettingsPage = () => {
-    // --- State for actual settings (Example structure - replace later) ---
-    // const [settings, setSettings] = useState({
-    //     siteName: '',
-    //     contactEmail: '',
-    //     defaultCapacity: 10,
-    //     enableFeatureX: false,
-    // });
-    const [loading, setLoading] = useState(false); // For fetching initial settings
-    const [isSaving, setIsSaving] = useState(false); // For saving changes
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+// Mock service functions - replace with actual API calls
+const getUsers = async (params = {}) => {
+  // Simulate API call
+  await new Promise((resolve) => setTimeout(resolve, 800))
 
-    // --- Fetch existing settings (Implement later) ---
-    // useEffect(() => {
-    //     const fetchSettings = async () => {
-    //         setLoading(true);
-    //         setError('');
-    //         try {
-    //             // const currentSettings = await getSettings();
-    //             // setSettings(currentSettings || { /* default values */ });
-    //             console.log("TODO: Fetch settings from backend");
-    //             await new Promise(res => setTimeout(res, 500)); // Simulate loading
-    //         } catch (err) {
-    //             setError('Failed to load settings.');
-    //             console.error(err);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-    //     fetchSettings();
-    // }, []);
+  // Mock data with branch information and enrollment details
+  const mockUsers = [
+    {
+      _id: "1",
+      firstName: "John",
+      lastName: "Smith",
+      email: "john.smith@example.com",
+      phone: "(555) 123-4567",
+      role: "student",
+      branch: "New York",
+      status: "active",
+      joinDate: "2023-01-15",
+      lastActive: "2023-06-10",
+      enrollments: [
+        { classId: "c1", className: "Yoga Basics", status: "completed", startDate: "2023-01-20" },
+        { classId: "c2", className: "Meditation 101", status: "active", startDate: "2023-05-15" },
+      ],
+      tags: ["new member", "premium"],
+      notes: "Interested in advanced classes",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "2",
+      firstName: "Sarah",
+      lastName: "Johnson",
+      email: "sarah.j@example.com",
+      phone: "(555) 987-6543",
+      role: "student",
+      branch: "Los Angeles",
+      status: "active",
+      joinDate: "2022-11-05",
+      lastActive: "2023-06-12",
+      enrollments: [
+        { classId: "c3", className: "Advanced Yoga", status: "active", startDate: "2023-03-10" },
+        { classId: "c4", className: "Wellness Workshop", status: "upcoming", startDate: "2023-07-01" },
+      ],
+      tags: ["instructor referral"],
+      notes: "Allergic to latex",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "3",
+      firstName: "Michael",
+      lastName: "Brown",
+      email: "michael.b@example.com",
+      phone: "(555) 456-7890",
+      role: "student",
+      branch: "Chicago",
+      status: "inactive",
+      joinDate: "2022-08-20",
+      lastActive: "2023-02-15",
+      enrollments: [{ classId: "c5", className: "Stress Management", status: "completed", startDate: "2022-09-01" }],
+      tags: [],
+      notes: "",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "4",
+      firstName: "Emily",
+      lastName: "Davis",
+      email: "emily.d@example.com",
+      phone: "(555) 234-5678",
+      role: "student",
+      branch: "Boston",
+      status: "active",
+      joinDate: "2023-03-10",
+      lastActive: "2023-06-11",
+      enrollments: [{ classId: "c6", className: "Mindfulness Meditation", status: "active", startDate: "2023-04-01" }],
+      tags: ["scholarship", "volunteer"],
+      notes: "Interested in becoming an instructor",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "5",
+      firstName: "David",
+      lastName: "Wilson",
+      email: "david.w@example.com",
+      phone: "(555) 876-5432",
+      role: "student",
+      branch: "Seattle",
+      status: "active",
+      joinDate: "2022-12-01",
+      lastActive: "2023-06-09",
+      enrollments: [
+        { classId: "c7", className: "Tai Chi Fundamentals", status: "active", startDate: "2023-01-05" },
+        { classId: "c8", className: "Qigong Basics", status: "completed", startDate: "2022-12-10" },
+      ],
+      tags: ["premium"],
+      notes: "",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "6",
+      firstName: "Jennifer",
+      lastName: "Martinez",
+      email: "jennifer.m@example.com",
+      phone: "(555) 345-6789",
+      role: "student",
+      branch: "Miami",
+      status: "active",
+      joinDate: "2023-02-15",
+      lastActive: "2023-06-12",
+      enrollments: [{ classId: "c9", className: "Stress Relief Workshop", status: "active", startDate: "2023-03-01" }],
+      tags: ["new member"],
+      notes: "Prefers evening classes",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "7",
+      firstName: "Robert",
+      lastName: "Taylor",
+      email: "robert.t@example.com",
+      phone: "(555) 567-8901",
+      role: "student",
+      branch: "New York",
+      status: "active",
+      joinDate: "2022-10-10",
+      lastActive: "2023-06-08",
+      enrollments: [
+        { classId: "c10", className: "Meditation for Beginners", status: "completed", startDate: "2022-11-01" },
+        { classId: "c11", className: "Advanced Meditation", status: "active", startDate: "2023-02-01" },
+      ],
+      tags: ["premium"],
+      notes: "",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "8",
+      firstName: "Lisa",
+      lastName: "Anderson",
+      email: "lisa.a@example.com",
+      phone: "(555) 678-9012",
+      role: "student",
+      branch: "Los Angeles",
+      status: "inactive",
+      joinDate: "2022-07-01",
+      lastActive: "2022-12-15",
+      enrollments: [{ classId: "c12", className: "Yoga for Stress", status: "completed", startDate: "2022-07-15" }],
+      tags: [],
+      notes: "Moved to another city",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "9",
+      firstName: "James",
+      lastName: "Thomas",
+      email: "james.t@example.com",
+      phone: "(555) 789-0123",
+      role: "student",
+      branch: "Chicago",
+      status: "active",
+      joinDate: "2023-04-01",
+      lastActive: "2023-06-10",
+      enrollments: [{ classId: "c13", className: "Mindful Living", status: "active", startDate: "2023-04-15" }],
+      tags: ["new member"],
+      notes: "",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "10",
+      firstName: "Michelle",
+      lastName: "Garcia",
+      email: "michelle.g@example.com",
+      phone: "(555) 890-1234",
+      role: "student",
+      branch: "Boston",
+      status: "active",
+      joinDate: "2022-09-15",
+      lastActive: "2023-06-11",
+      enrollments: [
+        { classId: "c14", className: "Yoga for Flexibility", status: "completed", startDate: "2022-10-01" },
+        { classId: "c15", className: "Advanced Yoga", status: "active", startDate: "2023-01-10" },
+      ],
+      tags: ["premium", "volunteer"],
+      notes: "Interested in private sessions",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "11",
+      firstName: "Daniel",
+      lastName: "Lee",
+      email: "daniel.l@example.com",
+      phone: "(555) 901-2345",
+      role: "student",
+      branch: "Seattle",
+      status: "active",
+      joinDate: "2023-01-20",
+      lastActive: "2023-06-09",
+      enrollments: [{ classId: "c16", className: "Meditation Techniques", status: "active", startDate: "2023-02-01" }],
+      tags: ["new member"],
+      notes: "",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+    {
+      _id: "12",
+      firstName: "Patricia",
+      lastName: "White",
+      email: "patricia.w@example.com",
+      phone: "(555) 012-3456",
+      role: "student",
+      branch: "Miami",
+      status: "active",
+      joinDate: "2022-11-10",
+      lastActive: "2023-06-12",
+      enrollments: [
+        { classId: "c17", className: "Stress Management", status: "completed", startDate: "2022-12-01" },
+        { classId: "c18", className: "Mindfulness in Daily Life", status: "active", startDate: "2023-03-15" },
+      ],
+      tags: ["premium"],
+      notes: "Prefers morning classes",
+      profileImage: "/placeholder.svg?height=200&width=200",
+    },
+  ]
 
-    // --- Handle Input Changes (Implement later based on actual fields) ---
-    // const handleChange = (e) => {
-    //     const { name, value, type, checked } = e.target;
-    //     setSettings(prev => ({
-    //         ...prev,
-    //         [name]: type === 'checkbox' ? checked : value,
-    //     }));
-    //     setSuccess('');
-    //     setError('');
-    // };
+  // Apply filters if provided
+  let filteredUsers = [...mockUsers]
 
-    // --- Handle Form Submission (Implement later) ---
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     setIsSaving(true);
-    //     setError('');
-    //     setSuccess('');
-    //     try {
-    //         // const updatedSettings = await updateSettings(settings);
-    //         // setSettings(updatedSettings); // Update state with response if needed
-    //          console.log("TODO: Save settings to backend", settings);
-    //         await new Promise(res => setTimeout(res, 1000)); // Simulate saving
-    //         setSuccess('Settings saved successfully!');
-    //     } catch (err) {
-    //         setError('Failed to save settings.');
-    //         console.error(err);
-    //     } finally {
-    //         setIsSaving(false);
-    //     }
-    // };
+  if (params.branch && params.branch !== "all") {
+    filteredUsers = filteredUsers.filter((user) => user.branch === params.branch)
+  }
 
-    // --- Render Logic ---
+  if (params.status && params.status !== "all") {
+    filteredUsers = filteredUsers.filter((user) => user.status === params.status)
+  }
 
-    if (loading) {
-        return <div className="text-center p-10">Loading settings...</div>;
-    }
+  if (params.enrollmentStatus && params.enrollmentStatus !== "all") {
+    filteredUsers = filteredUsers.filter((user) =>
+      user.enrollments.some((enrollment) => enrollment.status === params.enrollmentStatus),
+    )
+  }
 
-    return (
+  if (params.search) {
+    const searchLower = params.search.toLowerCase()
+    filteredUsers = filteredUsers.filter(
+      (user) =>
+        user.firstName.toLowerCase().includes(searchLower) ||
+        user.lastName.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        user.phone.includes(params.search),
+    )
+  }
+
+  if (params.tags && params.tags.length > 0) {
+    filteredUsers = filteredUsers.filter((user) => {
+      return params.tags.some((tag) => user.tags.includes(tag))
+    })
+  }
+
+  // Return paginated results
+  const page = params.page || 1
+  const limit = params.limit || 10
+  const startIndex = (page - 1) * limit
+  const endIndex = page * limit
+
+  return {
+    users: filteredUsers.slice(startIndex, endIndex),
+    total: filteredUsers.length,
+    page,
+    limit,
+    totalPages: Math.ceil(filteredUsers.length / limit),
+  }
+}
+
+const getBranches = async () => {
+  // Simulate API call
+  await new Promise((resolve) => setTimeout(resolve, 500))
+
+  // Mock branches data
+  return [
+    { id: "1", name: "New York", studentCount: 156, activeClasses: 12 },
+    { id: "2", name: "Los Angeles", studentCount: 143, activeClasses: 10 },
+    { id: "3", name: "Chicago", studentCount: 98, activeClasses: 8 },
+    { id: "4", name: "Boston", studentCount: 87, activeClasses: 7 },
+    { id: "5", name: "Seattle", studentCount: 76, activeClasses: 6 },
+    { id: "6", name: "Miami", studentCount: 65, activeClasses: 5 },
+  ]
+}
+
+const getTags = async () => {
+  // Simulate API call
+  await new Promise((resolve) => setTimeout(resolve, 300))
+
+  // Mock tags data
+  return ["new member", "premium", "scholarship", "volunteer", "instructor referral"]
+}
+
+const exportStudents = async (filters) => {
+  // Simulate API call
+  await new Promise((resolve) => setTimeout(resolve, 1500))
+  return { success: true }
+}
+
+// Reusable components
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden ${className}`}>{children}</div>
+)
+
+const Badge = ({ children, color = "gray" }) => {
+  const colors = {
+    gray: "bg-gray-100 text-gray-800 border-gray-200",
+    green: "bg-green-100 text-green-800 border-green-200",
+    red: "bg-red-100 text-red-800 border-red-200",
+    yellow: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    blue: "bg-blue-100 text-blue-800 border-blue-200",
+    purple: "bg-purple-100 text-purple-800 border-purple-200",
+  }
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[color]}`}>
+      {children}
+    </span>
+  )
+}
+
+const StatusBadge = ({ status }) => {
+  switch (status) {
+    case "active":
+      return <Badge color="green">Active</Badge>
+    case "inactive":
+      return <Badge color="red">Inactive</Badge>
+    case "completed":
+      return <Badge color="blue">Completed</Badge>
+    case "upcoming":
+      return <Badge color="yellow">Upcoming</Badge>
+    default:
+      return <Badge>{status}</Badge>
+  }
+}
+
+const Avatar = ({ src, name, size = "md" }) => {
+  const sizes = {
+    sm: "h-8 w-8 text-xs",
+    md: "h-10 w-10 text-sm",
+    lg: "h-12 w-12 text-base",
+  }
+
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .substring(0, 2)
+
+  return (
+    <div
+      className={`relative rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium overflow-hidden ${sizes[size]}`}
+    >
+      {src ? (
+        <img src={src || "/placeholder.svg"} alt={name} className="h-full w-full object-cover" />
+      ) : (
+        <span className="select-none">{initials}</span>
+      )}
+    </div>
+  )
+}
+
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  const pages = []
+  const maxVisiblePages = 5
+
+  // Calculate range of visible page numbers
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+
+  // Adjust if we're near the end
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1)
+  }
+
+  // Generate page numbers
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i)
+  }
+
+  return (
+    <div className="flex items-center justify-between px-4 py-3 sm:px-6">
+      <div className="flex-1 flex justify-between sm:hidden">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+      <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <FiSettings className="mr-3 h-6 w-6" /> Application Settings
-            </h1>
-
-             {/* Display Global Success/Error Messages */}
-             {success && <div className="mb-4 p-3 text-sm text-green-700 bg-green-100 rounded-lg border border-green-200" role="alert">{success}</div>}
-             {error && <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-lg border border-red-200" role="alert">{error}</div>}
-
-            {/* --- Placeholder Form --- */}
-            {/* Replace this entire form element once you define settings */}
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-8"> {/* Prevent default submit for now */}
-
-                {/* Example Section: Site Configuration */}
-                <div className="bg-white p-6 shadow rounded-lg">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Site Configuration</h2>
-                    <div className="space-y-4">
-                         {/* Placeholder for Site Name Input */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Site Name (Example)</label>
-                            <input type="text" disabled className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-gray-100" placeholder="Setting not implemented" />
-                        </div>
-                        {/* Placeholder for Contact Email Input */}
-                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Contact Email (Example)</label>
-                            <input type="email" disabled className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-gray-100" placeholder="Setting not implemented" />
-                        </div>
-                         {/* Add more setting inputs here */}
-                    </div>
-                </div>
-
-                 {/* Example Section: Notification Settings */}
-                <div className="bg-white p-6 shadow rounded-lg">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Notifications</h2>
-                     <div className="space-y-4">
-                        {/* Placeholder for Checkbox */}
-                        <div className="flex items-start">
-                             <div className="flex h-5 items-center">
-                                 <input id="email-notifications" name="email-notifications" type="checkbox" disabled className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"/>
-                             </div>
-                             <div className="ml-3 text-sm">
-                                 <label htmlFor="email-notifications" className="font-medium text-gray-700">Enable Email Notifications (Example)</label>
-                                 <p className="text-gray-500">Control whether certain emails are sent.</p>
-                             </div>
-                         </div>
-                         {/* Add more notification settings here */}
-                    </div>
-                </div>
-
-                {/* --- Save Button (Disabled for now) --- */}
-                <div className="pt-5">
-                    <div className="flex justify-end">
-                        <button
-                            type="submit" // Change to "submit" when handleSubmit is implemented
-                            // onClick={handleSubmit} // Use onClick if not using form submission
-                            className="inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-                            disabled={true || isSaving} // Disabled until implemented
-                        >
-                            {isSaving ? (
-                                <FiLoader className="animate-spin -ml-1 mr-3 h-5 w-5" />
-                            ) : (
-                                <FiSave className="-ml-1 mr-2 h-5 w-5" />
-                            )}
-                            Save Settings (Disabled)
-                        </button>
-                    </div>
-                </div>
-            </form>
+          <p className="text-sm text-gray-700">
+            Showing page <span className="font-medium">{currentPage}</span> of{" "}
+            <span className="font-medium">{totalPages}</span>
+          </p>
         </div>
-    );
-};
+        <div>
+          <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="sr-only">Previous</span>
+              <FiChevronUp className="h-5 w-5 rotate-90" />
+            </button>
+            {startPage > 1 && (
+              <>
+                <button
+                  onClick={() => onPageChange(1)}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  1
+                </button>
+                {startPage > 2 && (
+                  <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                    ...
+                  </span>
+                )}
+              </>
+            )}
+            {pages.map((page) => (
+              <button
+                key={page}
+                onClick={() => onPageChange(page)}
+                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                  page === currentPage
+                    ? "z-10 bg-primary-50 border-primary-500 text-primary-600"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            {endPage < totalPages && (
+              <>
+                {endPage < totalPages - 1 && (
+                  <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                    ...
+                  </span>
+                )}
+                <button
+                  onClick={() => onPageChange(totalPages)}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  {totalPages}
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="sr-only">Next</span>
+              <FiChevronDown className="h-5 w-5 rotate-90" />
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+  )
+}
 
-export default AdminSettingsPage;
+const StudentCard = ({ student, onViewDetails }) => {
+  const activeEnrollments = student.enrollments.filter((e) => e.status === "active").length
+  const completedEnrollments = student.enrollments.filter((e) => e.status === "completed").length
+
+  return (
+    <Card className="h-full">
+      <div className="p-4 flex flex-col h-full">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center">
+            <Avatar src={student.profileImage} name={`${student.firstName} ${student.lastName}`} size="lg" />
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-gray-900">
+                {student.firstName} {student.lastName}
+              </h3>
+              <p className="text-sm text-gray-500">{student.email}</p>
+            </div>
+          </div>
+          <StatusBadge status={student.status} />
+        </div>
+
+        <div className="space-y-3 mb-4 flex-grow">
+          <div className="flex items-center text-sm">
+            <FiMapPin className="mr-2 h-4 w-4 text-gray-400" />
+            <span>{student.branch}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <FiPhone className="mr-2 h-4 w-4 text-gray-400" />
+            <span>{student.phone}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <FiCalendar className="mr-2 h-4 w-4 text-gray-400" />
+            <span>Joined {format(new Date(student.joinDate), "MMM d, yyyy")}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <FiClock className="mr-2 h-4 w-4 text-gray-400" />
+            <span>Last active {format(new Date(student.lastActive), "MMM d, yyyy")}</span>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-100 pt-4 mt-auto">
+          <div className="flex justify-between text-sm mb-3">
+            <span className="text-gray-500">Enrollments:</span>
+            <span className="font-medium">{student.enrollments.length} total</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="bg-green-50 p-2 rounded text-center">
+              <span className="block text-lg font-semibold text-green-700">{activeEnrollments}</span>
+              <span className="text-xs text-green-600">Active</span>
+            </div>
+            <div className="bg-blue-50 p-2 rounded text-center">
+              <span className="block text-lg font-semibold text-blue-700">{completedEnrollments}</span>
+              <span className="text-xs text-blue-600">Completed</span>
+            </div>
+          </div>
+
+          {student.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-4">
+              {student.tags.map((tag) => (
+                <Badge key={tag} color="purple">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={() => onViewDetails(student._id)}
+            className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          >
+            <FiEye className="mr-2 h-4 w-4" />
+            View Profile
+          </button>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+const StudentDetailsModal = ({ student, isOpen, onClose }) => {
+  if (!isOpen || !student) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div
+        className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-start p-6 border-b border-gray-100">
+          <div className="flex items-center">
+            <Avatar src={student.profileImage} name={`${student.firstName} ${student.lastName}`} size="lg" />
+            <div className="ml-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {student.firstName} {student.lastName}
+              </h2>
+              <div className="flex items-center mt-1">
+                <StatusBadge status={student.status} />
+                <span className="mx-2 text-gray-300">•</span>
+                <span className="text-sm text-gray-500">{student.branch} Branch</span>
+              </div>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-500 focus:outline-none" aria-label="Close">
+            <FiX className="h-6 w-6" />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Contact & Basic Info */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Contact Information</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center text-sm">
+                    <FiMail className="mr-3 h-5 w-5 text-gray-400" />
+                    <a href={`mailto:${student.email}`} className="text-primary-600 hover:underline">
+                      {student.email}
+                    </a>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <FiPhone className="mr-3 h-5 w-5 text-gray-400" />
+                    <a href={`tel:${student.phone}`} className="text-primary-600 hover:underline">
+                      {student.phone}
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Membership Details</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center text-sm">
+                    <FiCalendar className="mr-3 h-5 w-5 text-gray-400" />
+                    <span>
+                      Joined <strong>{format(new Date(student.joinDate), "MMMM d, yyyy")}</strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <FiClock className="mr-3 h-5 w-5 text-gray-400" />
+                    <span>
+                      Last active <strong>{format(new Date(student.lastActive), "MMMM d, yyyy")}</strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Tags</h3>
+                {student.tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {student.tags.map((tag) => (
+                      <Badge key={tag} color="purple">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No tags assigned</p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Notes</h3>
+                {student.notes ? (
+                  <p className="text-sm text-gray-700">{student.notes}</p>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No notes available</p>
+                )}
+              </div>
+            </div>
+
+            {/* Right column - Enrollments & Activity */}
+            <div className="md:col-span-2 space-y-6">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Enrollment History</h3>
+                {student.enrollments.length > 0 ? (
+                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Class
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Start Date
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {student.enrollments.map((enrollment, index) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {enrollment.className}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {format(new Date(enrollment.startDate), "MMM d, yyyy")}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <StatusBadge status={enrollment.status} />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No enrollment history available</p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Activity Summary</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Total Classes</h4>
+                    <p className="text-2xl font-bold text-gray-900">{student.enrollments.length}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Active Classes</h4>
+                    <p className="text-2xl font-bold text-green-600">
+                      {student.enrollments.filter((e) => e.status === "active").length}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Completed Classes</h4>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {student.enrollments.filter((e) => e.status === "completed").length}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Upcoming Classes</h4>
+                    <p className="text-2xl font-bold text-yellow-600">
+                      {student.enrollments.filter((e) => e.status === "upcoming").length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-100 p-4 flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          >
+            Close
+          </button>
+          <button className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+            <FiEdit className="inline-block mr-2 h-4 w-4" />
+            Edit Profile
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const AdminStudentsPage = () => {
+  // State
+  const [users, setUsers] = useState([])
+  const [branches, setBranches] = useState([])
+  const [tags, setTags] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filters, setFilters] = useState({
+    branch: "all",
+    status: "all",
+    enrollmentStatus: "all",
+    tags: [],
+  })
+  const [sort, setSort] = useState({ field: "lastName", direction: "asc" })
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  })
+  const [viewMode, setViewMode] = useState("table") // 'table' or 'grid'
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+
+  // Fetch data
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError("")
+
+    try {
+      // Fetch branches
+      const branchesData = await getBranches()
+      setBranches(branchesData)
+
+      // Fetch tags
+      const tagsData = await getTags()
+      setTags(tagsData)
+
+      // Fetch users with filters
+      const params = {
+        ...filters,
+        search: searchTerm,
+        page: pagination.page,
+        limit: pagination.limit,
+        sort: sort.field,
+        direction: sort.direction,
+      }
+
+      const userData = await getUsers(params)
+      setUsers(userData.users)
+      setPagination({
+        ...pagination,
+        total: userData.total,
+        totalPages: userData.totalPages,
+      })
+    } catch (err) {
+      console.error("Error fetching data:", err)
+      setError("Failed to load student data. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }, [filters, searchTerm, pagination.page, pagination.limit, sort])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Handle search
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value)
+    setPagination({ ...pagination, page: 1 }) // Reset to first page on new search
+  }
+
+  // Handle filter changes
+  const handleFilterChange = (name, value) => {
+    setFilters((prev) => ({ ...prev, [name]: value }))
+    setPagination({ ...pagination, page: 1 }) // Reset to first page on filter change
+  }
+
+  // Handle tag selection
+  const handleTagToggle = (tag) => {
+    setFilters((prev) => {
+      const currentTags = [...prev.tags]
+      if (currentTags.includes(tag)) {
+        return { ...prev, tags: currentTags.filter((t) => t !== tag) }
+      } else {
+        return { ...prev, tags: [...currentTags, tag] }
+      }
+    })
+    setPagination({ ...pagination, page: 1 }) // Reset to first page on filter change
+  }
+
+  // Handle sorting
+  const handleSort = (field) => {
+    setSort((prev) => ({
+      field,
+      direction: prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+    }))
+  }
+
+  // Handle pagination
+  const handlePageChange = (page) => {
+    setPagination({ ...pagination, page })
+  }
+
+  // Handle view student details
+  const handleViewDetails = (studentId) => {
+    const student = users.find((u) => u._id === studentId)
+    if (student) {
+      setSelectedStudent(student)
+      setIsDetailsModalOpen(true)
+    }
+  }
+
+  // Handle export
+  const handleExport = async () => {
+    setIsExporting(true)
+    try {
+      await exportStudents({
+        ...filters,
+        search: searchTerm,
+      })
+      // Show success message or download file
+      alert("Export successful! The file has been downloaded.")
+    } catch (err) {
+      console.error("Export error:", err)
+      setError("Failed to export student data. Please try again.")
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  // Render sort icon
+  const renderSortIcon = (field) => {
+    if (sort.field !== field) return null
+    return sort.direction === "asc" ? (
+      <FiChevronUp className="ml-1 h-4 w-4 inline-block" />
+    ) : (
+      <FiChevronDown className="ml-1 h-4 w-4 inline-block" />
+    )
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center mb-4 md:mb-0">
+          <FiUsers className="mr-3 h-6 w-6 text-primary-600" /> Student Management
+        </h1>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => alert("Add Student functionality would go here")}
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+          >
+            <FiUserPlus className="mr-2 h-4 w-4" />
+            Add Student
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={isExporting || loading}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+          >
+            {isExporting ? (
+              <>
+                <FiLoader className="mr-2 h-4 w-4 animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <FiDownload className="mr-2 h-4 w-4" />
+                Export
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-start">
+          <FiAlertCircle className="h-5 w-5 mr-3 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Error</p>
+            <p className="mt-1">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Filters and Search */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div className="md:col-span-3">
+          <label htmlFor="branch-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            Branch
+          </label>
+          <select
+            id="branch-filter"
+            value={filters.branch}
+            onChange={(e) => handleFilterChange("branch", e.target.value)}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+          >
+            <option value="all">All Branches</option>
+            {branches.map((branch) => (
+              <option key={branch.id} value={branch.name}>
+                {branch.name} ({branch.studentCount})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="md:col-span-3">
+          <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            Status
+          </label>
+          <select
+            id="status-filter"
+            value={filters.status}
+            onChange={(e) => handleFilterChange("status", e.target.value)}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div className="md:col-span-3">
+          <label htmlFor="enrollment-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            Enrollment
+          </label>
+          <select
+            id="enrollment-filter"
+            value={filters.enrollmentStatus}
+            onChange={(e) => handleFilterChange("enrollmentStatus", e.target.value)}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+          >
+            <option value="all">All Enrollments</option>
+            <option value="active">Active Classes</option>
+            <option value="completed">Completed Classes</option>
+            <option value="upcoming">Upcoming Classes</option>
+          </select>
+        </div>
+
+        <div className="md:col-span-3">
+          <label htmlFor="search-students" className="block text-sm font-medium text-gray-700 mb-1">
+            Search
+          </label>
+          <div className="relative rounded-md shadow-sm">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            </div>
+            <input
+              type="search"
+              id="search-students"
+              className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+              placeholder="Name, email, phone..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Tags Filter */}
+      {tags.length > 0 && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Tags</label>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => handleTagToggle(tag)}
+                className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
+                  filters.tags.includes(tag)
+                    ? "bg-primary-100 text-primary-800 border border-primary-200"
+                    : "bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200"
+                }`}
+              >
+                {filters.tags.includes(tag) && <FiCheck className="mr-1 h-3 w-3" />}
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* View Mode Toggle & Results Count */}
+      <div className="mb-4 flex justify-between items-center">
+        <div className="text-sm text-gray-500">
+          {loading ? (
+            <span className="flex items-center">
+              <FiLoader className="animate-spin mr-2 h-4 w-4" /> Loading students...
+            </span>
+          ) : (
+            <span>
+              Showing <span className="font-medium">{users.length}</span> of{" "}
+              <span className="font-medium">{pagination.total}</span> students
+            </span>
+          )}
+        </div>
+
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setViewMode("table")}
+            className={`p-2 rounded-md ${
+              viewMode === "table" ? "bg-gray-200 text-gray-800" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+            aria-label="Table view"
+          >
+            <FiList className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-2 rounded-md ${
+              viewMode === "grid" ? "bg-gray-200 text-gray-800" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+            aria-label="Grid view"
+          >
+            <FiGrid className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Students List */}
+      {loading ? (
+        <Card className="p-12 flex justify-center items-center">
+          <FiLoader className="animate-spin h-8 w-8 text-primary-600 mr-3" />
+          <span className="text-lg text-gray-600">Loading students...</span>
+        </Card>
+      ) : users.length > 0 ? (
+        <>
+          {viewMode === "table" ? (
+            <Card>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        <button
+                          type="button"
+                          className="flex items-center w-full text-left focus:outline-none"
+                          onClick={() => handleSort("lastName")}
+                        >
+                          Student {renderSortIcon("lastName")}
+                        </button>
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        <button
+                          type="button"
+                          className="flex items-center w-full text-left focus:outline-none"
+                          onClick={() => handleSort("email")}
+                        >
+                          Contact {renderSortIcon("email")}
+                        </button>
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        <button
+                          type="button"
+                          className="flex items-center w-full text-left focus:outline-none"
+                          onClick={() => handleSort("branch")}
+                        >
+                          Branch {renderSortIcon("branch")}
+                        </button>
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Enrollments
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        <button
+                          type="button"
+                          className="flex items-center w-full text-left focus:outline-none"
+                          onClick={() => handleSort("joinDate")}
+                        >
+                          Joined {renderSortIcon("joinDate")}
+                        </button>
+                      </th>
+                      <th scope="col" className="relative px-6 py-3">
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.map((user) => (
+                      <tr key={user._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Avatar src={user.profileImage} name={`${user.firstName} ${user.lastName}`} size="sm" />
+                            <div className="ml-3">
+                              <div className="text-sm font-medium text-gray-900">
+                                {user.firstName} {user.lastName}
+                              </div>
+                              <div className="flex mt-1 space-x-1">
+                                {user.tags.map((tag) => (
+                                  <Badge key={tag} color="purple">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{user.email}</div>
+                          <div className="text-sm text-gray-500">{user.phone}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.branch}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <StatusBadge status={user.status} />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex items-center">
+                            <span className="font-medium text-gray-900 mr-2">{user.enrollments.length}</span>
+                            <div className="flex space-x-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-green-500" title="Active"></span>
+                              <span className="text-xs text-green-600" title="Active enrollments">
+                                {user.enrollments.filter((e) => e.status === "active").length}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {format(new Date(user.joinDate), "MMM d, yyyy")}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() => handleViewDetails(user._id)}
+                            className="text-primary-600 hover:text-primary-900 mr-3"
+                          >
+                            <FiEye className="h-5 w-5" />
+                          </button>
+                          <button className="text-gray-600 hover:text-gray-900 mr-3">
+                            <FiEdit className="h-5 w-5" />
+                          </button>
+                          <button className="text-red-600 hover:text-red-900">
+                            <FiTrash2 className="h-5 w-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {users.map((user) => (
+                <StudentCard key={user._id} student={user} onViewDetails={handleViewDetails} />
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
+      ) : (
+        <Card className="p-12 text-center">
+          <FiInfo className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No students found</h3>
+          <p className="text-gray-500 max-w-md mx-auto mb-6">
+            {searchTerm || Object.values(filters).some((v) => v !== "all" && v.length !== 0)
+              ? "Try adjusting your search or filters to find what you're looking for."
+              : "There are no students in the system yet. Add your first student to get started."}
+          </p>
+          {searchTerm || Object.values(filters).some((v) => v !== "all" && v.length !== 0) ? (
+            <button
+              onClick={() => {
+                setSearchTerm("")
+                setFilters({
+                  branch: "all",
+                  status: "all",
+                  enrollmentStatus: "all",
+                  tags: [],
+                })
+              }}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <FiRefreshCw className="mr-2 h-4 w-4" />
+              Clear Filters
+            </button>
+          ) : (
+            <button
+              onClick={() => alert("Add Student functionality would go here")}
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+            >
+              <FiUserPlus className="mr-2 h-4 w-4" />
+              Add Student
+            </button>
+          )}
+        </Card>
+      )}
+
+      {/* Student Details Modal */}
+      <StudentDetailsModal
+        student={selectedStudent}
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+      />
+    </div>
+  )
+}
+
+export default AdminStudentsPage

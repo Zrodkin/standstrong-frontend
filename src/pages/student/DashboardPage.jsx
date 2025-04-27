@@ -17,6 +17,8 @@ import {
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getMyRegistrations } from '../../services/registrationService';
+import { Button } from "@/components/ui/button";
+
 
 // Dummy Theme Toggle State
 const useTheme = () => {
@@ -142,25 +144,30 @@ const DashboardPage = () => {
             >
               {theme === 'light' ? <FiMoon className="h-5 w-5" /> : <FiSun className="h-5 w-5 text-yellow-400" />}
             </button>
-            <Link
-              to="/classes"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-            >
-              Browse Classes
-            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+  <Link
+    to="/classes"
+    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+  >
+    Browse Classes
+  </Link>
+</motion.div>
           </div>
         </div>
 
-        {/* Welcome Panel */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-          className="bg-indigo-100 text-indigo-900 p-5 rounded-xl shadow-inner mb-8"
-        >
-          <h2 className="text-2xl font-bold">Welcome back, {currentUser?.firstName || 'Student'}! 👋</h2>
-          <p className="mt-1">Ready to power up your next class? Let’s get to it!</p>
-        </motion.div>
+       {/* Welcome Panel */}
+<motion.div
+  initial="hidden"
+  animate="visible"
+  variants={cardVariants}
+  className="bg-indigo-100 text-indigo-900 p-5 rounded-xl shadow-inner mb-8"
+>
+  <h2 className="text-2xl font-bold">
+    Welcome back, {currentUser?.firstName || 'Student'}! 👋
+  </h2>
+  <p className="mt-1">Ready to power up your next class? Let’s get to it!</p>
+
+</motion.div>
 
         {/* Error */}
         {error && (
