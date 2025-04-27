@@ -191,41 +191,8 @@ const ClassesPage = () => {
   }
 
   // Helper to get class type badge
-  const getClassTypeBadge = (type) => {
-    if (type === "one-time") {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-          Workshop
-        </span>
-      )
-    } else if (type === "ongoing") {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          Course
-        </span>
-      )
-    }
-    return null
-  }
-
-  // Helper to get gender badge
-  const getGenderBadge = (gender) => {
-    if (gender === "female") {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
-          Women Only
-        </span>
-      )
-    } else if (gender === "male") {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-          Men Only
-        </span>
-      )
-    }
-    return null
-  }
-
+  
+ 
   // Prevent rendering if no city is selected yet
   if (!selectedCity) {
     return null
@@ -381,20 +348,12 @@ const ClassesPage = () => {
                     state={{ city: selectedCity }}
                     className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 ease-out overflow-hidden flex flex-col group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 h-full relative"
                   >
-                    {/* Class Type Badge - Positioned Absolutely */}
-                    <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
-                      {getClassTypeBadge(classItem.type)}
-                      {getGenderBadge(classItem.targetGender)}
-                    </div>
+                   
 
                     <div className="p-6 flex flex-col flex-grow">
                       {/* Title with Enhanced Typography */}
                       <div className="mb-3 pr-16">
                         {" "}
-                        {/* Added right padding for badge space */}
-                        <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition duration-150 leading-tight">
-                          {classItem.title || "Untitled Class"}
-                        </h3>
                       </div>
 
                       {/* Description with Better Spacing */}
