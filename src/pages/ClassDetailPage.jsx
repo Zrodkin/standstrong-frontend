@@ -53,6 +53,32 @@ const ClassDetailPage = () => {
     const [registerSuccess, setRegisterSuccess] = useState(false);
     const [registerError, setRegisterError] = useState(null);
   
+    const getFullImageUrl = (partialUrl) => {
+      if (!partialUrl) return '';
+      
+      // If it's already a complete URL (starts with http/https), use it as is
+      if (partialUrl.startsWith('http')) return partialUrl;
+      
+      // First approach: Use environment variable API URL
+      const apiBaseUrl = import.meta.env.VITE_API_URL;
+      
+      // Second approach: Dynamically determine the backend URL
+      const backendUrl = (() => {
+        // If API URL is explicitly defined, use it
+        if (apiBaseUrl) return apiBaseUrl;
+        
+        // For same-origin deployments, use relative URL (works in both dev and prod)
+        return '';
+      })();
+      
+      // Ensure there's no double slash when combining URLs
+      const formattedPartialUrl = partialUrl.startsWith('/') 
+        ? partialUrl 
+        : `/${partialUrl}`;
+      
+      return `${backendUrl}${formattedPartialUrl}`;
+    };
+
     const fetchClassData = async () => {
       try {
         nprogress.start();
@@ -73,6 +99,12 @@ const ClassDetailPage = () => {
       // eslint-disable-next-line
     }, [id]);
   
+    useEffect(() => {
+      if (classData) {
+        console.log('Partner logo path:', classData.partnerLogo);
+      }
+    }, [classData]);
+
     const handleRegister = async () => {
       if (!isAuthenticated) {
         navigate(`/login?redirect=/classes/${id}`);
@@ -105,6 +137,8 @@ const ClassDetailPage = () => {
       const displayHour = (hour % 12) || 12;
       return `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
     };
+
+
   
     const googleMapsUrl = classData?.location?.address
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(classData.location.address)}`
@@ -116,7 +150,7 @@ const ClassDetailPage = () => {
       const alreadyRegistered = isUserRegistered();
       const isExternal = classData.registrationType === 'external';
       const schedule = classData.schedule || [];
-    
+      
       return (
         <div className="bg-gray-50 min-h-screen">
           {/* Breadcrumb */}
@@ -143,12 +177,34 @@ const ClassDetailPage = () => {
                 {classData.title}
               </motion.h1>
     
-              {/* Partner Logo if exists */}
               {classData.partnerLogo && (
-                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
-                  <img src={classData.partnerLogo} alt="Partner Logo" className="h-20 mx-auto mt-6 rounded shadow-md bg-white p-2" />
-                </motion.div>
-              )}
+  <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
+    <img 
+      src={getFullImageUrl(classData.partnerLogo)} 
+      alt="Partner Logo" 
+      className="h-20 mx-auto mt-6 rounded shadow-md bg-white p-2"
+      onError={(e) => {
+        // REPLACE THIS ENTIRE FUNCTION with the improved error handling
+        console.error('Failed to load logo:', e.target.src);
+        
+        // Try a fallback approach - sometimes removing the domain helps
+        const fallbackUrl = classData.partnerLogo.startsWith('/') 
+          ? classData.partnerLogo 
+          : `/${classData.partnerLogo}`;
+          
+        // Only try fallback if it's different from the original
+        if (e.target.src !== fallbackUrl) {
+          console.log('Trying fallback URL:', fallbackUrl);
+          e.target.src = fallbackUrl;
+        } else {
+          // If fallback also fails, hide the image
+          console.log('Fallback also failed, hiding image');
+          e.target.style.display = 'none';
+        }
+      }}
+    />
+  </motion.div>
+)}
     
               <p className="mt-4 text-lg text-blue-100">
                 Led by: {classData.instructor?.name || 'Instructor TBD'}
