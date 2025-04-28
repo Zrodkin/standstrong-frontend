@@ -153,6 +153,15 @@ const ClassDetailPage = () => {
   const [registerSuccess, setRegisterSuccess] = useState(false)
   const [registerError, setRegisterError] = useState(null)
   const [activeTab, setActiveTab] = useState("about")
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    participants: 1,
+    specialRequirements: "",
+  })
+  const [isWishlisted, setIsWishlisted] = useState(false)
 
   // --- Fetch Class ---
   const fetchClassData = useCallback(async () => {
@@ -279,6 +288,63 @@ const ClassDetailPage = () => {
     ? `https://maps.google.com/?q=${encodeURIComponent(classData.location.address)}`
     : null
 
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData({
+      ...formData,
+      [name]: value,
+    })
+  }
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    // In a real app, you would send this data to your backend
+    console.log("Form submitted:", formData)
+    alert("Registration successful! You will receive a confirmation email shortly.")
+    setShowRegistrationForm(false)
+  }
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
+    return new Date(dateString).toLocaleDateString("en-US", options)
+  }
+
+  // Animation variants
+  const pageVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: {
+        duration: 0.3,
+        ease: "easeIn",
+      },
+    },
+  }
+
+  const formVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+  }
+
   // --- Render ---
   if (loading || loadingMyRegs) {
     return <LoadingSpinner />
@@ -297,7 +363,7 @@ const ClassDetailPage = () => {
   const schedule = classData.schedule || []
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-slate-50 min-h-screen flex flex-col">
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center space-x-2 text-sm">
@@ -316,63 +382,61 @@ const ClassDetailPage = () => {
       </div>
 
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-violet-600 to-indigo-700 text-white py-16 sm:py-24 overflow-hidden">
-        {classData.imageUrl && (
-          <div className="absolute inset-0 w-full h-full">
-            <img
-              src={getFullImageUrl(classData.imageUrl) || "/placeholder.svg"}
-              alt=""
-              className="w-full h-full object-cover opacity-20"
-              onError={handleImageError}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-600/80 to-indigo-700/80 mix-blend-multiply" />
-          </div>
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden py-16 md:py-24">
+  <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:16px_16px]"></div>
+  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
+  {classData.imageUrl && (
+    <div className="absolute inset-0 w-full h-full">
+      <img
+        src={getFullImageUrl(classData.imageUrl) || "/placeholder.svg"}
+        alt=""
+        className="w-full h-full object-cover opacity-20"
+        onError={handleImageError}
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-indigo-800/80 mix-blend-multiply" />
+    </div>
+  )}
+  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 h-full flex items-center">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="flex flex-col items-center text-center w-full"
+    >
+      <div className="space-y-4 max-w-3xl mx-auto">
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white">
+          {classData.targetGender === "male" && "Men's Class"}
+          {classData.targetGender === "female" && "Women's Class"}
+          {classData.targetGender === "any" && "Open to All (Co-ed)"}
+        </span>
+
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{classData.title}</h1>
+
+        {classData.instructor?.name && (
+          <p className="text-white/90 font-medium">
+            Instructor: {classData.instructor.name}
+          </p>
         )}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col md:flex-row md:items-center md:justify-between gap-8"
-          >
-            <div className="space-y-4 max-w-3xl">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white">
-                {classData.targetGender === "male" && "Men's Class"}
-                {classData.targetGender === "female" && "Women's Class"}
-                {classData.targetGender === "any" && "Open to All (Co-ed)"}
-              </span>
-
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{classData.title}</h1>
-
-              <div className="flex items-center gap-3 mt-2">
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-                  {classData.instructor?.name?.charAt(0) || "I"}
-                </div>
-                <div>
-                  <p className="text-white/80 text-sm">Instructor</p>
-                  <p className="font-medium">{classData.instructor?.name || "Instructor TBD"}</p>
-                </div>
-              </div>
-            </div>
-
-            {classData.partnerLogo && (
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="bg-white p-3 rounded-xl shadow-xl max-h-24 self-start"
-              >
-                <img
-                  src={getFullImageUrl(classData.partnerLogo) || "/placeholder.svg"}
-                  alt={`${classData.partnerName || "Partner"} Logo`}
-                  className="h-16 sm:h-20 object-contain"
-                  onError={handleImageError}
-                />
-              </motion.div>
-            )}
-          </motion.div>
-        </div>
       </div>
+
+      {classData.partnerLogo && (
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6"
+        >
+          <img
+            src={getFullImageUrl(classData.partnerLogo) || "/placeholder.svg"}
+            alt={`${classData.partnerName || "Partner"} Logo`}
+            className="h-16 sm:h-20 object-contain"
+            onError={handleImageError}
+          />
+        </motion.div>
+      )}
+    </motion.div>
+  </div>
+</div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
