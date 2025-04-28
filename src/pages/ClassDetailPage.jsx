@@ -205,27 +205,79 @@ const ClassDetailPage = () => {
     fetchUserRegistrations()
   }, [id, fetchClassData, fetchUserRegistrations])
 
+  useEffect(() => {
+    if (classData?.partnerLogo) {
+      console.log("Original partnerLogo path:", classData.partnerLogo);
+      console.log("Constructed URL:", getFullImageUrl(classData.partnerLogo));
+      console.log("Running in:", window.location.hostname === "localhost" ? "development" : "production");
+      console.log("API base URL:", import.meta.env.VITE_API_URL);
+    }
+  }, [classData]);
+
   // --- Image Helpers ---
   const getFullImageUrl = (partialUrl) => {
-    if (!partialUrl) return ""
-    if (partialUrl.startsWith("http")) return partialUrl
-    const apiBaseUrl = import.meta.env.VITE_API_URL || ""
-    const formattedPartialUrl = partialUrl.startsWith("/") ? partialUrl : `/${partialUrl}`
-    if (!apiBaseUrl || apiBaseUrl === "/") return formattedPartialUrl
-    if (apiBaseUrl.endsWith("/")) return `${apiBaseUrl.slice(0, -1)}${formattedPartialUrl}`
-    return `${apiBaseUrl}${formattedPartialUrl}`
+    if (!partialUrl) return "/placeholder.svg";
+    
+    // If it's already a full URL, return it
+    if (partialUrl.startsWith("http")) return partialUrl;
+    
+    // Extract filename
+    const filename = partialUrl.split('/').pop();
+    
+    // In development, always use the backend URL
+    if (window.location.hostname === "localhost") {
+      const apiBaseUrl = import.meta.env.VITE_API_URL;
+      return `${apiBaseUrl}/uploads/partner-logos/${filename}`;
+    }
+    
+    // In production, use the relative path (will be handled by Vercel rewrites)
+    return `/uploads/partner-logos/${filename}`;
   }
 
   const handleImageError = (e) => {
     console.warn("Failed to load image:", e.target.src)
-    if (!e.target.dataset.fallbackAttempted && classData?.partnerLogo) {
-      const fallbackUrl = classData.partnerLogo.startsWith("/") ? classData.partnerLogo : `/${classData.partnerLogo}`
-      e.target.src = fallbackUrl
-      e.target.dataset.fallbackAttempted = "true"
-    } else {
-      console.warn("Fallback failed or no logo path, hiding image element.")
-      e.target.style.display = "none"
+    
+    // Get the image filename
+    const filename = classData?.partnerLogo?.split('/').pop();
+    
+    // Try different fallback approaches
+    if (!e.target.dataset.fallbackAttempted && filename) {
+      // First fallback: Try the standard uploads path
+      const fallbackUrl = `/uploads/partner-logos/${filename}`;
+      console.log("Trying fallback #1:", fallbackUrl);
+      e.target.src = fallbackUrl;
+      e.target.dataset.fallbackAttempted = "1";
+    } 
+    // Second fallback: Try with API base URL
+    else if (e.target.dataset.fallbackAttempted === "1" && filename) {
+      const apiBaseUrl = import.meta.env.VITE_API_URL || "";
+      if (apiBaseUrl) {
+        const fallbackUrl = `${apiBaseUrl}/uploads/partner-logos/${filename}`;
+        console.log("Trying fallback #2:", fallbackUrl);
+        e.target.src = fallbackUrl;
+        e.target.dataset.fallbackAttempted = "2";
+      } else {
+        // Skip to placeholder if no API base URL
+        e.target.src = "/placeholder.svg";
+        e.target.dataset.fallbackAttempted = "3";
+      }
     }
+    // Final fallback: Use placeholder image
+    else if (e.target.dataset.fallbackAttempted === "2") {
+      console.log("Trying placeholder image");
+      e.target.src = "/placeholder.svg";
+      e.target.dataset.fallbackAttempted = "3";
+    }
+    // If all fallbacks fail, show the fallback content
+else {
+  console.warn("All fallbacks failed, showing text fallback");
+  e.target.style.display = "none";
+  // Show the fallback element
+  const fallbackEl = document.getElementById(`fallback-${classData._id}`);
+  if (fallbackEl) {
+    fallbackEl.style.display = "flex";
+  }
+}
   }
 
   // --- Registration ---
@@ -382,7 +434,7 @@ const ClassDetailPage = () => {
       </div>
 
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-16 sm:py-24 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden py-16 md:py-24">
   <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:16px_16px]"></div>
   <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
   {classData.imageUrl && (
@@ -396,14 +448,9 @@ const ClassDetailPage = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-indigo-800/80 mix-blend-multiply" />
     </div>
   )}
-  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="flex flex-col md:flex-row md:items-center md:justify-between gap-8"
-    >
-      <div className="space-y-4 max-w-3xl text-center md:text-left mx-auto md:mx-0">
+  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 h-full flex items-center">
+    <div className="flex flex-col items-center text-center w-full">
+      <div className="space-y-4 max-w-3xl mx-auto">
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white">
           {classData.targetGender === "male" && "Men's Class"}
           {classData.targetGender === "female" && "Women's Class"}
@@ -420,21 +467,23 @@ const ClassDetailPage = () => {
       </div>
 
       {classData.partnerLogo && (
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="bg-white p-3 rounded-xl shadow-xl max-h-24 self-start mx-auto md:mx-0"
-        >
-          <img
-            src={getFullImageUrl(classData.partnerLogo) || "/placeholder.svg"}
-            alt={`${classData.partnerName || "Partner"} Logo`}
-            className="h-16 sm:h-20 object-contain"
-            onError={handleImageError}
-          />
-        </motion.div>
-      )}
-    </motion.div>
+  <div className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6">
+    <img
+      src={getFullImageUrl(classData.partnerLogo)}
+      alt={`${classData.partnerName || "Partner"} Logo`}
+      className="h-16 sm:h-20 object-contain"
+      onError={(e) => {
+        console.error("Failed to load image:", e.target.src);
+        // Show partner name if image fails to load
+        e.target.style.display = "none";
+        e.target.insertAdjacentHTML('afterend', 
+          `<span class="text-gray-500 font-medium">${classData.partnerName || "Partner"}</span>`
+        );
+      }}
+    />
+  </div>
+)}
+    </div>
   </div>
 </div>
 

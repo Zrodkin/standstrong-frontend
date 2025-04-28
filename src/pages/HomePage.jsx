@@ -176,7 +176,7 @@ return (
           alt="Stand Strong Hero"
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="eager"
-          fetchpriority="high"
+          fetchPriority="high"
         />
       </div>
       
