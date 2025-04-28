@@ -230,7 +230,7 @@ return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.5 }}
       >
         <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">Find Us In Your City</h2>
@@ -242,13 +242,17 @@ return (
     
     <motion.div 
       className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 text-center" 
-      variants={containerVariants} 
-      initial="hidden" 
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1 }}
     >
       {cities.map((city) => (
-        <motion.div key={city._id} variants={itemVariants} className="mb-2 sm:mb-0">
+        <motion.div 
+          key={city._id} 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 * cities.indexOf(city) }}
+          className="mb-2 sm:mb-0"
+        >
           <Link to={`/classes?city=${city.name}`} className="block group">
             <div className="overflow-hidden rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-shadow duration-300">
               <img
