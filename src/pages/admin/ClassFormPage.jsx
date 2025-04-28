@@ -787,21 +787,24 @@ const ClassFormPage = () => {
               </div>
 
               {/* Description */}
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                  Description <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  rows="4"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  placeholder="Provide a detailed description of the class..."
-                ></textarea>
-              </div>
+<div>
+  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+    Description <span className="text-red-500">*</span>
+  </label>
+  <textarea
+    id="description"
+    name="description"
+    rows="4"
+    value={formData.description}
+    onChange={handleChange}
+    required
+    className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+    placeholder="Provide a detailed description of the class... Press Enter for paragraph breaks."
+  ></textarea>
+  <p className="mt-1 text-xs text-gray-500">
+    Use paragraph breaks (Enter key) to organize your text into readable sections.
+  </p>
+</div>
             </div>
           )}
         </section>

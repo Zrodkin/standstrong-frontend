@@ -526,8 +526,14 @@ else {
                 <div className="p-6">
                   <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Class</h2>
                   <div className="prose prose-lg max-w-none text-gray-700">
-                    <p>{classData.description || "No description provided."}</p>
-                  </div>
+  {classData.description ? (
+    classData.description.split('\n\n').map((paragraph, index) => (
+      <p key={index}>{paragraph}</p>
+    ))
+  ) : (
+    <p>No description provided.</p>
+  )}
+</div>
                 </div>
               )}
 
