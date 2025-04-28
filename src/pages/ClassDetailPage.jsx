@@ -382,7 +382,7 @@ const ClassDetailPage = () => {
       </div>
 
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden py-16 md:py-24">
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-16 sm:py-24 overflow-hidden">
   <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:16px_16px]"></div>
   <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
   {classData.imageUrl && (
@@ -396,9 +396,14 @@ const ClassDetailPage = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-indigo-800/80 mix-blend-multiply" />
     </div>
   )}
-  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 h-full flex items-center">
-    <div className="flex flex-col items-center text-center w-full">
-      <div className="space-y-4 max-w-3xl mx-auto">
+  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="flex flex-col md:flex-row md:items-center md:justify-between gap-8"
+    >
+      <div className="space-y-4 max-w-3xl text-center md:text-left mx-auto md:mx-0">
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white">
           {classData.targetGender === "male" && "Men's Class"}
           {classData.targetGender === "female" && "Women's Class"}
@@ -415,16 +420,21 @@ const ClassDetailPage = () => {
       </div>
 
       {classData.partnerLogo && (
-        <div className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="bg-white p-3 rounded-xl shadow-xl max-h-24 self-start mx-auto md:mx-0"
+        >
           <img
             src={getFullImageUrl(classData.partnerLogo) || "/placeholder.svg"}
             alt={`${classData.partnerName || "Partner"} Logo`}
             className="h-16 sm:h-20 object-contain"
             onError={handleImageError}
           />
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   </div>
 </div>
 
