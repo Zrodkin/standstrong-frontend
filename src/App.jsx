@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ClassProvider } from './context/ClassContext';
 import { AttendanceProvider } from './context/AttendanceContext';
+import { Analytics } from "@vercel/analytics/react"
 
 // Layouts
 import MainLayout from './Layouts/MainLayout';
@@ -271,6 +272,7 @@ function App() {
           </AuthProvider>
         </ErrorBoundary>
       </Router>
+      <Analytics />
     </>
   );
 }

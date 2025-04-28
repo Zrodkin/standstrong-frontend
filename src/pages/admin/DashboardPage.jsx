@@ -39,16 +39,19 @@ const AdminDashboardPage = () => {
       try {
         setLoading(true);
         setError(null);
-
-        const [classes, users] = await Promise.all([
+    
+        const [classes, usersResponse] = await Promise.all([
           getClasses(),
           getUsers()
         ]);
-
+    
+        // Extract the users array from the response object
+        const users = Array.isArray(usersResponse.users) ? usersResponse.users : [];
+    
         setClassesData(classes);
-        setUsersData(users);
-
-        calculateStats(classes, users);
+        setUsersData(usersResponse); // You might want to set the entire response or just users
+    
+        calculateStats(classes, users); // Pass the users array, not the response object
         generateEnrollmentData(classes);
       } catch (err) {
         setError('Failed to load dashboard data. Please try again later.');

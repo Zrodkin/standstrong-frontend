@@ -17,6 +17,11 @@ import {
   FiArrowLeft,
   FiClock,
   FiChevronRight,
+  FiGrid,
+  FiList,
+  FiStar,
+  FiInfo,
+  FiSliders,
 } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
 import { getClasses } from "../services/classService"
@@ -45,11 +50,15 @@ const ClassesPage = () => {
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search])
   const selectedCity = queryParams.get("city")
 
+  // State Variables
   const [classes, setClasses] = useState([])
   const [classesLoading, setClassesLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
   const [totalClassesCount, setTotalClassesCount] = useState(0)
+  const [viewMode, setViewMode] = useState("grid") // 'grid' or 'list'
+  const [sortOption, setSortOption] = useState("date-asc")
+  const [searchTerm, setSearchTerm] = useState("")
 
   const [filters, setFilters] = useState(() => {
     return {
@@ -60,12 +69,18 @@ const ClassesPage = () => {
       cost: queryParams.get("cost") || "",
       type: queryParams.get("type") || "",
       time: queryParams.get("time") || "",
+      search: queryParams.get("search") || "",
     }
   })
 
   // Derived state to check if any non-city filters are active
   const hasActiveFilters = useMemo(() => {
     return Object.entries(filters).some(([key, value]) => key !== "city" && value !== "")
+  }, [filters])
+
+  // Count the number of active filters
+  const activeFiltersCount = useMemo(() => {
+    return Object.entries(filters).filter(([key, value]) => key !== "city" && value !== "").length
   }, [filters])
 
   // Update URL when filters change
@@ -144,13 +159,53 @@ const ClassesPage = () => {
       cost: "",
       type: "",
       time: "",
+      search: "",
     }))
+    setSearchTerm("")
   }
 
   // Handler for applying filters (just closes the drawer)
   const handleApplyFilters = () => {
     setIsFilterDrawerOpen(false)
   }
+
+  // Handler for search form submission
+  const handleSearch = (e) => {
+    e.preventDefault()
+    setFilters(prev => ({ ...prev, search: searchTerm }))
+  }
+
+  // Sort classes based on the selected sort option
+  const sortedClasses = useMemo(() => {
+    if (!classes.length) return []
+    
+    const sorted = [...classes]
+    
+    switch (sortOption) {
+      case "date-asc":
+        return sorted.sort((a, b) => {
+          const dateA = a.schedule && a.schedule.length ? new Date(a.schedule[0].date) : new Date(0)
+          const dateB = b.schedule && b.schedule.length ? new Date(b.schedule[0].date) : new Date(0)
+          return dateA - dateB
+        })
+      case "date-desc":
+        return sorted.sort((a, b) => {
+          const dateA = a.schedule && a.schedule.length ? new Date(a.schedule[0].date) : new Date(0)
+          const dateB = b.schedule && b.schedule.length ? new Date(b.schedule[0].date) : new Date(0)
+          return dateB - dateA
+        })
+      case "price-asc":
+        return sorted.sort((a, b) => a.cost - b.cost)
+      case "price-desc":
+        return sorted.sort((a, b) => b.cost - a.cost)
+      case "name-asc":
+        return sorted.sort((a, b) => a.title.localeCompare(b.title))
+      case "name-desc":
+        return sorted.sort((a, b) => b.title.localeCompare(a.title))
+      default:
+        return sorted
+    }
+  }, [classes, sortOption])
 
   // Helper to format schedule based on type, start date, and end date
   const formatSchedule = (classItem) => {
@@ -190,8 +245,55 @@ const ClassesPage = () => {
     }
   }
 
+  // Helper to format times
+  const formatTime = (timeStr) => {
+    if (!timeStr) return ""
+    
+    try {
+      const [hours, minutes] = timeStr.split(":").map(Number)
+      const date = new Date()
+      date.setHours(hours, minutes)
+      return format(date, "h:mm a")
+    } catch (error) {
+      return timeStr
+    }
+  }
+
   // Helper to get class type badge
-  
+  const getClassTypeBadge = (type) => {
+    if (type === "one-time") {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-100 text-amber-800">
+          Workshop
+        </span>
+      )
+    } else if (type === "ongoing") {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+          Course
+        </span>
+      )
+    }
+    return null
+  }
+
+  // Helper to get gender badge
+  const getGenderBadge = (gender) => {
+    if (gender === "female") {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-pink-100 text-pink-800">
+          Women Only
+        </span>
+      )
+    } else if (gender === "male") {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800">
+          Men Only
+        </span>
+      )
+    }
+    return null
+  }
  
   // Prevent rendering if no city is selected yet
   if (!selectedCity) {
@@ -201,84 +303,152 @@ const ClassesPage = () => {
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
       {/* Hero Section with Enhanced Gradient and Typography */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden py-24 md:py-32">
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden py-16 md:py-24">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:16px_16px]"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <motion.h1
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={pageVariants}
-            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100"
-          >
-            Find Your Strength
-          </motion.h1>
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={pageVariants}
-            className="mt-4 text-lg md:text-xl text-blue-100 max-w-3xl mx-auto"
-          >
-            Browse our self-defense classes in <span className="font-semibold text-white">{selectedCity}</span>. Find
-            the right fit for your needs and schedule.
-          </motion.p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <button
+                  onClick={() => navigate("/#cities-section")}
+                  className="p-2 text-white bg-white/20 hover:bg-white/30 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 transition-colors"
+                  aria-label="Back to cities"
+                >
+                  <FiArrowLeft className="h-4 w-4" />
+                </button>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+                  Classes in {selectedCity}
+                </h1>
+              </div>
+              <p className="text-blue-100 max-w-2xl ml-10">
+                Browse our self-defense classes and workshops. Find the right fit for your needs and schedule.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <form onSubmit={handleSearch} className="relative">
+                <input
+                  type="search"
+                  placeholder="Search classes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full sm:w-64 px-10 py-2 bg-white/10 border border-white/20 text-white placeholder:text-white/70 rounded-md focus:outline-none focus:ring-2 focus:ring-white/30"
+                />
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+              </form>
+              
+              <button
+                type="button"
+                onClick={() => setIsFilterDrawerOpen(true)}
+                className="inline-flex items-center px-4 py-2 border border-white/20 text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+              >
+                <FiFilter className="mr-2 h-4 w-4" />
+                Filters
+                {activeFiltersCount > 0 && (
+                  <span className="ml-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-white text-blue-700 text-xs font-medium">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Main Content with Improved Spacing and Layout */}
       <motion.div
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow w-full"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full"
         initial="hidden"
         animate="visible"
         exit="exit"
         variants={pageVariants}
       >
-        {/* Header and Filters Button with Enhanced Styling */}
-        <div className="mb-8 md:flex md:items-center md:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate("/#cities-section")}
-                className="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm"
-                aria-label="Change city"
-              >
-                <FiArrowLeft className="h-5 w-5" />
-              </button>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{selectedCity} Classes</h2>
-            </div>
-            <p className="mt-2 text-sm text-gray-500 pl-10">
-              {classesLoading
-                ? "Loading..."
-                : `Showing ${classes.length} ${classes.length === 1 ? "class" : "classes"}`}
-              {hasActiveFilters &&
-                !classesLoading &&
-                totalClassesCount > 0 &&
-                classes.length !== totalClassesCount &&
-                ` of ${totalClassesCount} total`}
-            </p>
+        {/* Toolbar - Sort and View Options */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            {classesLoading ? (
+              <div className="h-5 w-40 bg-gray-200 rounded animate-pulse"></div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                Showing <span className="font-medium text-gray-700">{sortedClasses.length}</span> classes
+              </p>
+            )}
+            
+            {hasActiveFilters && (
+              <span className="inline-flex items-center text-xs font-medium text-gray-500 px-2 py-1 rounded-full border border-gray-200 bg-gray-50">
+                <FiFilter className="h-3 w-3 mr-1" />
+                {activeFiltersCount} {activeFiltersCount === 1 ? 'filter' : 'filters'} applied
+              </span>
+            )}
           </div>
-
-          <div className="mt-4 md:mt-0 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsFilterDrawerOpen(true)}
-              className="inline-flex items-center px-4 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
-            >
-              <FiFilter className="mr-2 -ml-0.5 h-5 w-5" />
-              Filters {hasActiveFilters && <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-white"></span>}
-            </button>
+          
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                className="block w-full pl-3 pr-10 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="date-asc">Date (Earliest first)</option>
+                <option value="date-desc">Date (Latest first)</option>
+                <option value="price-asc">Price (Low to high)</option>
+                <option value="price-desc">Price (High to low)</option>
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+              </select>
+            </div>
+            
+            <div className="flex border border-gray-300 rounded-md overflow-hidden">
+              <button
+                className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                onClick={() => setViewMode('grid')}
+                aria-label="Grid view"
+              >
+                <FiGrid className="h-4 w-4" />
+              </button>
+              <button
+                className={`p-2 ${viewMode === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                onClick={() => setViewMode('list')}
+                aria-label="List view"
+              >
+                <FiList className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
+          <div className="mb-6 bg-blue-50 rounded-lg p-3 flex items-center justify-between">
+            <div className="flex items-center">
+              <FiFilter className="h-5 w-5 text-blue-500 mr-2" />
+              <span className="text-sm font-medium text-blue-700">Filters applied</span>
+            </div>
+            <button onClick={handleClearFilters} className="text-sm font-medium text-blue-600 hover:text-blue-800">
+              Clear all
+            </button>
+          </div>
+        )}
 
         {/* Classes Content - Conditional Rendering with Enhanced States */}
         {classesLoading ? (
           // Enhanced Loading State
-          <div className="flex flex-col justify-center items-center py-24 bg-white rounded-xl shadow-sm border border-gray-100">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600 font-medium">Loading classes...</p>
-            <p className="text-sm text-gray-500 mt-1">Finding the best options in {selectedCity}</p>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((index) => (
+              <div key={index} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="h-48 bg-gray-200 animate-pulse"></div>
+                <div className="p-5 space-y-3">
+                  <div className="h-6 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-full bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="pt-4 flex justify-between">
+                    <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : error ? (
           // Enhanced Error State
@@ -295,11 +465,11 @@ const ClassesPage = () => {
               </button>
             </div>
           </div>
-        ) : classes.length === 0 ? (
+        ) : sortedClasses.length === 0 ? (
           // Enhanced Empty State
           <div className="bg-white border border-gray-100 shadow-sm rounded-xl py-16 px-6 text-center mt-8 flex flex-col items-center">
             <div className="bg-blue-50 p-4 rounded-full mb-4">
-              <FiSearch className="w-10 h-10 text-blue-500" />
+              <FiInfo className="w-10 h-10 text-blue-500" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
               No Classes Found {hasActiveFilters ? "Matching Your Filters" : `in ${selectedCity}`}
@@ -320,50 +490,52 @@ const ClassesPage = () => {
           </div>
         ) : (
           // Enhanced Classes Grid with Animation
-          <>
-            {/* Active Filters Display */}
-            {hasActiveFilters && (
-              <div className="mb-6 bg-blue-50 rounded-lg p-3 flex items-center justify-between">
-                <div className="flex items-center">
-                  <FiFilter className="h-5 w-5 text-blue-500 mr-2" />
-                  <span className="text-sm font-medium text-blue-700">Filters applied</span>
-                </div>
-                <button onClick={handleClearFilters} className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                  Clear all
-                </button>
-              </div>
-            )}
-
-            {/* Enhanced Card Grid */}
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"
-              variants={cardContainerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {classes.map((classItem) => (
-                <motion.div key={classItem._id} variants={cardItemVariants} layout className="h-full">
-                  <Link
-                    to={`/classes/${classItem._id}`}
-                    state={{ city: selectedCity }}
-                    className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 ease-out overflow-hidden flex flex-col group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 h-full relative"
-                  >
-                   
-
-                    <div className="p-6 flex flex-col flex-grow">
-                      {/* Title with Enhanced Typography */}
-                      <div className="mb-3 pr-16">
-                        {" "}
+          <motion.div 
+            variants={cardContainerVariants}
+            initial="hidden"
+            animate="visible"
+            className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}
+          >
+            {sortedClasses.map((classItem) => (
+              <motion.div key={classItem._id} variants={cardItemVariants} layout>
+                {viewMode === 'grid' ? (
+                  // Grid View
+                  <div className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 ease-out overflow-hidden flex flex-col h-full group">
+                    <Link
+                      to={`/classes/${classItem._id}`}
+                      state={{ city: selectedCity }}
+                      className="relative h-48 bg-gray-100 overflow-hidden"
+                    >
+                      {classItem.imageUrl && (
+                        <div 
+                          className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                          style={{ backgroundImage: `url(${classItem.imageUrl})` }}
+                        ></div>
+                      )}
+                      
+                      <div className="absolute top-3 right-3 flex flex-col gap-2">
+                        {getClassTypeBadge(classItem.type)}
+                        {getGenderBadge(classItem.targetGender)}
                       </div>
-
-                      {/* Description with Better Spacing */}
+                    </Link>
+                    
+                    <div className="p-5 flex flex-col flex-grow">
+                      <Link
+                        to={`/classes/${classItem._id}`}
+                        state={{ city: selectedCity }}
+                        className="block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                          {classItem.title || 'Untitled Class'}
+                        </h3>
+                      </Link>
+                      
                       <p className="text-sm text-gray-600 line-clamp-3 flex-grow mb-5 min-h-[60px]">
                         {classItem.description || "No description available."}
                       </p>
-
-                      {/* Details Section with Enhanced Icons and Layout */}
+                      
                       <div className="mt-auto space-y-3 text-sm text-gray-700 border-t border-gray-100 pt-4">
-                        {/* Instructor with Enhanced Styling */}
+                        {/* Instructor */}
                         <div className="flex items-center">
                           <div className="bg-blue-50 p-1.5 rounded-full mr-3">
                             <FiUser className="flex-shrink-0 h-4 w-4 text-blue-500" />
@@ -371,7 +543,7 @@ const ClassesPage = () => {
                           <span className="font-medium">{classItem.instructor?.name || "Instructor TBD"}</span>
                         </div>
 
-                        {/* Location with Enhanced Styling */}
+                        {/* Location */}
                         <div className="flex items-center min-w-0">
                           <div className="bg-blue-50 p-1.5 rounded-full mr-3">
                             <FiMapPin className="flex-shrink-0 h-4 w-4 text-blue-500" />
@@ -381,7 +553,7 @@ const ClassesPage = () => {
                           </span>
                         </div>
 
-                        {/* Schedule with Enhanced Styling */}
+                        {/* Schedule */}
                         <div className="flex items-center">
                           <div className="bg-blue-50 p-1.5 rounded-full mr-3">
                             <FiCalendar className="flex-shrink-0 h-4 w-4 text-blue-500" />
@@ -389,7 +561,7 @@ const ClassesPage = () => {
                           <span>{formatSchedule(classItem)}</span>
                         </div>
 
-                        {/* Cost with Enhanced Styling */}
+                        {/* Cost */}
                         <div className="flex items-center">
                           <div className="bg-blue-50 p-1.5 rounded-full mr-3">
                             <FiDollarSign className="flex-shrink-0 h-4 w-4 text-blue-500" />
@@ -399,7 +571,7 @@ const ClassesPage = () => {
                           </span>
                         </div>
 
-                        {/* Ages (Conditional) with Enhanced Styling */}
+                        {/* Ages (Conditional) */}
                         {(classItem.targetAgeRange?.min || classItem.targetAgeRange?.max) && (
                           <div className="flex items-center">
                             <div className="bg-blue-50 p-1.5 rounded-full mr-3">
@@ -414,47 +586,160 @@ const ClassesPage = () => {
                       </div>
 
                       {/* View Details Button */}
-                      <div className="mt-5 text-blue-600 font-medium text-sm flex items-center group-hover:text-blue-700">
+                      <Link
+                        to={`/classes/${classItem._id}`}
+                        state={{ city: selectedCity }}
+                        className="mt-5 text-blue-600 font-medium text-sm flex items-center group-hover:text-blue-700"
+                      >
                         View details
                         <FiChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Enhanced Testimonials Section */}
-            <section className="py-16 mt-16 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-100/50 overflow-hidden relative">
-              <div className="absolute inset-0 bg-grid-blue/[0.05] bg-[length:20px_20px]"></div>
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                <h2 className="text-3xl font-bold text-gray-800 mb-8">What People Are Saying</h2>
-                <div className="relative bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-3 rounded-full shadow-md">
-                      <FiAward className="h-6 w-6 text-white" />
+                      </Link>
                     </div>
                   </div>
-                  <blockquote className="mt-6">
-                    <p className="text-lg italic text-gray-700 leading-relaxed">
-                      "StandStrong's classes gave me real skills and real confidence. Highly recommend for everyone!"
-                    </p>
-                  </blockquote>
-                  <footer className="mt-6">
-                    <p className="text-base font-semibold text-gray-900">Josh G.</p>
-                    <p className="text-sm text-gray-500">Former IDF Sergeant</p>
-                  </footer>
-                </div>
-              </div>
-            </section>
-          </>
+                ) : (
+                  // List View
+                  <div className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 ease-out overflow-hidden group">
+                    <div className="sm:flex">
+                      <Link
+                        to={`/classes/${classItem._id}`}
+                        state={{ city: selectedCity }}
+                        className="relative h-48 sm:h-auto sm:w-48 sm:flex-shrink-0 block bg-gray-100"
+                      >
+                        {classItem.imageUrl && (
+                          <div 
+                            className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                            style={{ backgroundImage: `url(${classItem.imageUrl})` }}
+                          ></div>
+                        )}
+                      </Link>
+                      
+                      <div className="flex flex-col flex-grow">
+                        <div className="p-5">
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {getClassTypeBadge(classItem.type)}
+                            {getGenderBadge(classItem.targetGender)}
+                          </div>
+                          
+                          <Link
+                            to={`/classes/${classItem._id}`}
+                            state={{ city: selectedCity }}
+                            className="block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                              {classItem.title || 'Untitled Class'}
+                            </h3>
+                          </Link>
+                          
+                          <p className="text-sm text-gray-600 line-clamp-2 mt-1">
+                            {classItem.description || "No description available."}
+                          </p>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 mt-4">
+                            <div className="flex items-center text-sm">
+                              <FiMapPin className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+                              <span className="truncate">{classItem.location?.address || classItem.city}</span>
+                            </div>
+                            <div className="flex items-center text-sm">
+                              <FiCalendar className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+                              <span>{formatSchedule(classItem)}</span>
+                            </div>
+                            {classItem.schedule && classItem.schedule[0] && (
+                              <div className="flex items-center text-sm">
+                                <FiClock className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+                                <span>
+                                  {formatTime(classItem.schedule[0].startTime)} - {formatTime(classItem.schedule[0].endTime)}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center text-sm">
+                              <FiUsers className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+                              <span>
+                                {classItem.capacity 
+                                  ? `Capacity: ${classItem.capacity} students` 
+                                  : classItem.targetAgeRange?.min || classItem.targetAgeRange?.max 
+                                    ? `Ages ${classItem.targetAgeRange?.min || "?"} ${classItem.targetAgeRange?.max ? `- ${classItem.targetAgeRange.max}` : "+"}`
+                                    : "Open to all"
+                                }
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="px-5 py-4 border-t mt-auto flex justify-between items-center">
+                          <div className="font-medium text-gray-900">
+                            {classItem.cost === 0 ? (
+                              <span className="text-green-600">Free</span>
+                            ) : (
+                              <span>${classItem.cost}</span>
+                            )}
+                          </div>
+                          <Link
+                            to={`/classes/${classItem._id}`}
+                            state={{ city: selectedCity }}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
+                          >
+                            View Details
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </motion.div>
         )}
 
-        {/* Enhanced Filter Drawer with AnimatePresence */}
+        {/* Featured Testimonial Section */}
+        <section className="py-16 mt-16 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-100/50 overflow-hidden relative">
+          <div className="absolute inset-0 bg-grid-blue/[0.05] bg-[length:20px_20px]"></div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div className="text-amber-500 mb-4">
+              <FiStar className="h-10 w-10 mx-auto" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-8">What Our Students Say</h2>
+            <div className="relative bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+              <blockquote className="text-lg italic text-slate-700 mb-6">
+                "The instructors at StandStrong create a supportive environment where everyone can learn at their own pace. 
+                I've gained confidence and practical skills that I use every day."
+              </blockquote>
+              <footer className="mt-6">
+                <p className="font-semibold text-gray-900">Jessica D.</p>
+                <p className="text-sm text-gray-500">Student since 2022</p>
+              </footer>
+            </div>
+          </div>
+        </section>
+        
+        {/* Call to Action Section */}
+        <section className="py-12 mt-12">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg p-8 sm:p-10 text-white text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Ready to Stand Strong?</h2>
+            <p className="text-blue-100 max-w-2xl mx-auto mb-6">
+              Join a class today and learn practical self-defense skills in a supportive environment.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link 
+                to="/register" 
+                className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white shadow-sm transition-all"
+              >
+                Sign Up Now
+              </Link>
+              <Link 
+                to="/#cities-section" 
+                className="inline-flex justify-center items-center px-6 py-3 border border-white text-base font-medium rounded-md text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white shadow-sm transition-all"
+              >
+                Browse More Cities
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Filter Drawer */}
         <AnimatePresence>
           {isFilterDrawerOpen && (
             <>
-              {/* Backdrop Overlay with Improved Animation */}
+              {/* Backdrop Overlay */}
               <motion.div
                 className="fixed inset-0 bg-black bg-opacity-60 z-40 backdrop-blur-sm"
                 initial={{ opacity: 0 }}
@@ -464,7 +749,7 @@ const ClassesPage = () => {
                 onClick={() => setIsFilterDrawerOpen(false)}
               />
 
-              {/* Drawer Panel with Enhanced Design */}
+              {/* Drawer Panel */}
               <motion.div
                 role="dialog"
                 aria-modal="true"
@@ -475,14 +760,14 @@ const ClassesPage = () => {
                 exit={{ x: "100%" }}
                 transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
               >
-                {/* Drawer Header with Enhanced Styling */}
+                {/* Drawer Header */}
                 <div className="flex items-center justify-between p-5 border-b border-gray-200">
                   <h2 id="filter-drawer-title" className="text-lg font-semibold text-gray-900">
                     Refine Results
                   </h2>
                   <button
                     type="button"
-                    className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                    className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                     onClick={() => setIsFilterDrawerOpen(false)}
                     aria-label="Close filters"
                   >
@@ -490,7 +775,7 @@ const ClassesPage = () => {
                   </button>
                 </div>
 
-                {/* Drawer Content with Enhanced Form Controls */}
+                {/* Drawer Content - Scrollable Area */}
                 <div className="flex-grow overflow-y-auto p-6 space-y-6">
                   {/* Gender/Focus Filter */}
                   <div className="space-y-2">
@@ -501,7 +786,7 @@ const ClassesPage = () => {
                       <select
                         id="filter-gender"
                         name="gender"
-                        className="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white transition duration-150 ease-in-out"
+                        className="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white"
                         value={filters.gender}
                         onChange={handleFilterChange}
                       >
@@ -525,7 +810,7 @@ const ClassesPage = () => {
                       <select
                         id="filter-type"
                         name="type"
-                        className="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white transition duration-150 ease-in-out"
+                        className="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white"
                         value={filters.type}
                         onChange={handleFilterChange}
                       >
@@ -548,7 +833,7 @@ const ClassesPage = () => {
                       <select
                         id="filter-time"
                         name="time"
-                        className="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white transition duration-150 ease-in-out"
+                        className="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white"
                         value={filters.time}
                         onChange={handleFilterChange}
                       >
@@ -563,7 +848,7 @@ const ClassesPage = () => {
                     </div>
                   </div>
 
-                  {/* Age Range Filter - Two Column Layout with Enhanced Styling */}
+                  {/* Age Range Filter - Two Column Layout */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
                     <div className="grid grid-cols-2 gap-x-4">
@@ -578,7 +863,7 @@ const ClassesPage = () => {
                           min="0"
                           value={filters.minAge}
                           onChange={handleFilterChange}
-                          className="block w-full pl-3 pr-3 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white transition duration-150 ease-in-out"
+                          className="block w-full pl-3 pr-3 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white"
                           placeholder="Any"
                         />
                       </div>
@@ -593,14 +878,14 @@ const ClassesPage = () => {
                           min="0"
                           value={filters.maxAge}
                           onChange={handleFilterChange}
-                          className="block w-full pl-3 pr-3 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white transition duration-150 ease-in-out"
+                          className="block w-full pl-3 pr-3 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white"
                           placeholder="Any"
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* Max Cost Filter with Enhanced Styling */}
+                  {/* Max Cost Filter */}
                   <div className="space-y-2">
                     <label htmlFor="filter-cost" className="block text-sm font-medium text-gray-700">
                       Max Cost ($)
@@ -617,14 +902,14 @@ const ClassesPage = () => {
                         step="10"
                         value={filters.cost}
                         onChange={handleFilterChange}
-                        className="block w-full pl-7 pr-3 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white transition duration-150 ease-in-out"
+                        className="block w-full pl-7 pr-3 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white"
                         placeholder="Any Price"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Drawer Footer with Enhanced Buttons */}
+                {/* Drawer Footer */}
                 <div className="p-5 border-t border-gray-200 bg-gray-50 space-y-4">
                   <div className="flex justify-between items-center space-x-3">
                     <button
