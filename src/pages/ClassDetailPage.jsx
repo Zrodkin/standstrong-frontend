@@ -397,12 +397,7 @@ const ClassDetailPage = () => {
     </div>
   )}
   <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 h-full flex items-center">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="flex flex-col items-center text-center w-full"
-    >
+    <div className="flex flex-col items-center text-center w-full">
       <div className="space-y-4 max-w-3xl mx-auto">
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white">
           {classData.targetGender === "male" && "Men's Class"}
@@ -420,21 +415,16 @@ const ClassDetailPage = () => {
       </div>
 
       {classData.partnerLogo && (
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6"
-        >
+        <div className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6">
           <img
             src={getFullImageUrl(classData.partnerLogo) || "/placeholder.svg"}
             alt={`${classData.partnerName || "Partner"} Logo`}
             className="h-16 sm:h-20 object-contain"
             onError={handleImageError}
           />
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   </div>
 </div>
 
