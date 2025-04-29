@@ -787,7 +787,7 @@ const ClassFormPage = () => {
               </div>
 
               {/* Description */}
-<div>
+              <div>
   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
     Description <span className="text-red-500">*</span>
   </label>

@@ -27,6 +27,9 @@ import { format } from "date-fns"
 import nprogress from "nprogress"
 import "nprogress/nprogress.css"
 
+// At the top of the file with other imports
+import "./styles/animations.css"
+
 // --- Import Services Directly ---
 import { getClassById } from "/src/services/classService.js"
 import { createRegistration, getMyRegistrations } from "/src/services/registrationService.js"
@@ -207,77 +210,77 @@ const ClassDetailPage = () => {
 
   useEffect(() => {
     if (classData?.partnerLogo) {
-      console.log("Original partnerLogo path:", classData.partnerLogo);
-      console.log("Constructed URL:", getFullImageUrl(classData.partnerLogo));
-      console.log("Running in:", window.location.hostname === "localhost" ? "development" : "production");
-      console.log("API base URL:", import.meta.env.VITE_API_URL);
+      console.log("Original partnerLogo path:", classData.partnerLogo)
+      console.log("Constructed URL:", getFullImageUrl(classData.partnerLogo))
+      console.log("Running in:", window.location.hostname === "localhost" ? "development" : "production")
+      console.log("API base URL:", import.meta.env.VITE_API_URL)
     }
-  }, [classData]);
+  }, [classData])
 
   // --- Image Helpers ---
   const getFullImageUrl = (partialUrl) => {
-    if (!partialUrl) return "/placeholder.svg";
-    
+    if (!partialUrl) return "/placeholder.svg"
+
     // If it's already a full URL, return it
-    if (partialUrl.startsWith("http")) return partialUrl;
-    
+    if (partialUrl.startsWith("http")) return partialUrl
+
     // Extract filename
-    const filename = partialUrl.split('/').pop();
-    
+    const filename = partialUrl.split("/").pop()
+
     // In development, always use the backend URL
     if (window.location.hostname === "localhost") {
-      const apiBaseUrl = import.meta.env.VITE_API_URL;
-      return `${apiBaseUrl}/uploads/partner-logos/${filename}`;
+      const apiBaseUrl = import.meta.env.VITE_API_URL
+      return `${apiBaseUrl}/uploads/partner-logos/${filename}`
     }
-    
+
     // In production, use the relative path (will be handled by Vercel rewrites)
-    return `/uploads/partner-logos/${filename}`;
+    return `/uploads/partner-logos/${filename}`
   }
 
   const handleImageError = (e) => {
     console.warn("Failed to load image:", e.target.src)
-    
+
     // Get the image filename
-    const filename = classData?.partnerLogo?.split('/').pop();
-    
+    const filename = classData?.partnerLogo?.split("/").pop()
+
     // Try different fallback approaches
     if (!e.target.dataset.fallbackAttempted && filename) {
       // First fallback: Try the standard uploads path
-      const fallbackUrl = `/uploads/partner-logos/${filename}`;
-      console.log("Trying fallback #1:", fallbackUrl);
-      e.target.src = fallbackUrl;
-      e.target.dataset.fallbackAttempted = "1";
-    } 
+      const fallbackUrl = `/uploads/partner-logos/${filename}`
+      console.log("Trying fallback #1:", fallbackUrl)
+      e.target.src = fallbackUrl
+      e.target.dataset.fallbackAttempted = "1"
+    }
     // Second fallback: Try with API base URL
     else if (e.target.dataset.fallbackAttempted === "1" && filename) {
-      const apiBaseUrl = import.meta.env.VITE_API_URL || "";
+      const apiBaseUrl = import.meta.env.VITE_API_URL || ""
       if (apiBaseUrl) {
-        const fallbackUrl = `${apiBaseUrl}/uploads/partner-logos/${filename}`;
-        console.log("Trying fallback #2:", fallbackUrl);
-        e.target.src = fallbackUrl;
-        e.target.dataset.fallbackAttempted = "2";
+        const fallbackUrl = `${apiBaseUrl}/uploads/partner-logos/${filename}`
+        console.log("Trying fallback #2:", fallbackUrl)
+        e.target.src = fallbackUrl
+        e.target.dataset.fallbackAttempted = "2"
       } else {
         // Skip to placeholder if no API base URL
-        e.target.src = "/placeholder.svg";
-        e.target.dataset.fallbackAttempted = "3";
+        e.target.src = "/placeholder.svg"
+        e.target.dataset.fallbackAttempted = "3"
       }
     }
     // Final fallback: Use placeholder image
     else if (e.target.dataset.fallbackAttempted === "2") {
-      console.log("Trying placeholder image");
-      e.target.src = "/placeholder.svg";
-      e.target.dataset.fallbackAttempted = "3";
+      console.log("Trying placeholder image")
+      e.target.src = "/placeholder.svg"
+      e.target.dataset.fallbackAttempted = "3"
     }
     // If all fallbacks fail, show the fallback content
-else {
-  console.warn("All fallbacks failed, showing text fallback");
-  e.target.style.display = "none";
-  // Show the fallback element
-  const fallbackEl = document.getElementById(`fallback-${classData._id}`);
-  if (fallbackEl) {
-    fallbackEl.style.display = "flex";
-  }
-}
+    else {
+      console.warn("All fallbacks failed, showing text fallback")
+      e.target.style.display = "none"
+      // Show the fallback element
+      const fallbackEl = document.getElementById(`fallback-${classData._id}`)
+      if (fallbackEl) {
+        fallbackEl.style.display = "flex"
+      }
+    }
   }
 
   // --- Registration ---
@@ -434,60 +437,63 @@ else {
       </div>
 
       {/* Hero Section */}
-      <div className="relative text-white overflow-hidden py-16 md:py-24" style={{
-  background: "linear-gradient(90deg, rgba(21, 111, 176, 1) 0%, rgba(97, 174, 199, 1) 30%, rgba(97, 174, 199, 1) 70%, rgba(21, 111, 176, 1) 100%)"
-}}>
-  <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:16px_16px]"></div>
-  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
-  {classData.imageUrl && (
-    <div className="absolute inset-0 w-full h-full">
-      <img
-        src={getFullImageUrl(classData.imageUrl) || "/placeholder.svg"}
-        alt=""
-        className="w-full h-full object-cover opacity-20"
-        onError={handleImageError}
-      />
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-indigo-800/80 mix-blend-multiply" />
-    </div>
-  )}
-  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 h-full flex items-center">
-    <div className="flex flex-col items-center text-center w-full">
-      <div className="space-y-4 max-w-3xl mx-auto">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white">
-          {classData.targetGender === "male" && "Men's Class"}
-          {classData.targetGender === "female" && "Women's Class"}
-          {classData.targetGender === "any" && "Open to All (Co-ed)"}
-        </span>
+      <div
+        className="relative text-white overflow-hidden py-16 md:py-24"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(21, 111, 176, 1) 0%, rgba(97, 174, 199, 1) 30%, rgba(97, 174, 199, 1) 70%, rgba(21, 111, 176, 1) 100%)",
+        }}
+      >
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:16px_16px]"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
+        {classData.imageUrl && (
+          <div className="absolute inset-0 w-full h-full">
+            <img
+              src={getFullImageUrl(classData.imageUrl) || "/placeholder.svg"}
+              alt=""
+              className="w-full h-full object-cover opacity-20"
+              onError={handleImageError}
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-indigo-800/80 mix-blend-multiply" />
+          </div>
+        )}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 h-full flex items-center">
+          <div className="flex flex-col items-center text-center w-full">
+            <div className="space-y-4 max-w-3xl mx-auto">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white">
+                {classData.targetGender === "male" && "Men's Class"}
+                {classData.targetGender === "female" && "Women's Class"}
+                {classData.targetGender === "any" && "Open to All (Co-ed)"}
+              </span>
 
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{classData.title}</h1>
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{classData.title}</h1>
 
-        {classData.instructor?.name && (
-  <p className="text-white font-semibold text-lg">
-      {classData.instructor.name}
-  </p>
-)}
+              {classData.instructor?.name && (
+                <p className="text-white font-semibold text-lg">{classData.instructor.name}</p>
+              )}
+            </div>
+
+            {classData.partnerLogo && (
+              <div className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6">
+                <img
+                  src={getFullImageUrl(classData.partnerLogo) || "/placeholder.svg"}
+                  alt={`${classData.partnerName || "Partner"} Logo`}
+                  className="h-16 sm:h-20 object-contain"
+                  onError={(e) => {
+                    console.error("Failed to load image:", e.target.src)
+                    // Show partner name if image fails to load
+                    e.target.style.display = "none"
+                    e.target.insertAdjacentHTML(
+                      "afterend",
+                      `<span class="text-gray-500 font-medium">${classData.partnerName || "Partner"}</span>`,
+                    )
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-      {classData.partnerLogo && (
-  <div className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6">
-    <img
-      src={getFullImageUrl(classData.partnerLogo)}
-      alt={`${classData.partnerName || "Partner"} Logo`}
-      className="h-16 sm:h-20 object-contain"
-      onError={(e) => {
-        console.error("Failed to load image:", e.target.src);
-        // Show partner name if image fails to load
-        e.target.style.display = "none";
-        e.target.insertAdjacentHTML('afterend', 
-          `<span class="text-gray-500 font-medium">${classData.partnerName || "Partner"}</span>`
-        );
-      }}
-    />
-  </div>
-)}
-    </div>
-  </div>
-</div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
@@ -526,16 +532,10 @@ else {
               {/* About Tab */}
               {activeTab === "about" && (
                 <div className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Class</h2>
-                  <div className="prose prose-lg max-w-none text-gray-700">
-  {classData.description ? (
-    classData.description.split('\n\n').map((paragraph, index) => (
-      <p key={index}>{paragraph}</p>
-    ))
-  ) : (
-    <p>No description provided.</p>
-  )}
-</div>
+                  <h2 className="text-2xl font-bold gradient-text mb-4">Safe. Confident. Proud.</h2>
+                  <div className="prose prose-lg max-w-none text-gray-700 whitespace-pre-line">
+                    {classData.description || "No description provided."}
+                  </div>
                 </div>
               )}
 
@@ -581,31 +581,15 @@ else {
                   )}
                 </div>
               )}
-
               {/* Instructor Tab */}
               {activeTab === "instructor" && classData.instructor?.bio && (
                 <div className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">About the Instructor</h2>
-                  <div className="flex flex-col sm:flex-row gap-6">
-                    <div className="h-24 w-24 rounded-lg bg-gray-200 flex items-center justify-center text-gray-500 text-2xl font-bold">
-                      {classData.instructor?.imageUrl ? (
-                        <img
-                          src={getFullImageUrl(classData.instructor.imageUrl) || "/placeholder.svg"}
-                          alt={classData.instructor.name}
-                          className="w-full h-full object-cover rounded-lg"
-                          onError={(e) => {
-                            e.target.style.display = "none"
-                            e.target.parentNode.textContent = classData.instructor.name.charAt(0)
-                          }}
-                        />
-                      ) : (
-                        classData.instructor.name.charAt(0)
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-800 mb-2">{classData.instructor.name}</h3>
-                      <p className="text-gray-600">{classData.instructor.bio}</p>
-                    </div>
+                  {/* Centered Instructor Name */}
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">{classData.instructor.name}</h2>
+
+                  {/* Left-aligned Bio */}
+                  <div className="flex flex-col gap-4">
+                    <p className="text-gray-600 max-w-2xl mx-auto text-left">{classData.instructor.bio}</p>
                   </div>
                 </div>
               )}
@@ -614,7 +598,12 @@ else {
 
           {/* Right Column */}
           <div className="mt-10 lg:mt-0">
-            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 lg:sticky lg:top-6 space-y-6">
+            <motion.div
+              className="bg-white p-6 rounded-xl shadow-md border border-gray-200 lg:sticky lg:top-6 space-y-6 hover-lift"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
               <h3 className="text-xl font-bold text-gray-800 mb-5 pb-2 border-b border-gray-100">Class Details</h3>
 
               {/* Success/Error Messages */}
@@ -742,17 +731,20 @@ else {
                     Register on Partner Site <FiExternalLink className="ml-2 h-4 w-4" />
                   </a>
                 ) : (
-                  <button
+                  <motion.button
                     type="button"
                     onClick={handleOpenConfirmation}
                     disabled={isConfirming || registering}
-                    className="w-full inline-flex justify-center items-center px-6 py-3.5 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full inline-flex justify-center items-center px-6 py-3.5 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed pulse-on-hover"
+                    whileHover={{ scale: 1.02, backgroundColor: "#1a56db" }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   >
                     {isAuthenticated ? "Register for Class" : "Login to Register"}
-                  </button>
+                  </motion.button>
                 )}
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
