@@ -758,12 +758,7 @@ const ClassDetailPage = () => {
         isLoading={registering}
       />
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 text-center py-8 mt-16 sm:mt-24 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm">
-          © {new Date().getFullYear()} StandStrong. All rights reserved.
-        </div>
-      </footer>
+     
     </div>
   )
 }

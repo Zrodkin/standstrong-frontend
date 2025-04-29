@@ -56,7 +56,6 @@ const ClassesPage = () => {
   const [error, setError] = useState(null)
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
   const [totalClassesCount, setTotalClassesCount] = useState(0)
-  const [viewMode, setViewMode] = useState("grid") // 'grid' or 'list'
   const [sortOption, setSortOption] = useState("date-asc")
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -112,6 +111,7 @@ const ClassesPage = () => {
         })
 
         const filteredClassesData = await getClasses(apiFilters)
+        console.log("API Response:", JSON.stringify(filteredClassesData, null, 2));
         setClasses(filteredClassesData)
 
         if (hasActiveFilters) {
@@ -368,22 +368,22 @@ const ClassesPage = () => {
       >
         {/* Toolbar - Sort and View Options */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            {classesLoading ? (
-              <div className="h-5 w-40 bg-gray-200 rounded animate-pulse"></div>
-            ) : (
-              <p className="text-sm text-gray-500">
-                Showing <span className="font-medium text-gray-700">{sortedClasses.length}</span> classes
-              </p>
-            )}
-            
-            {hasActiveFilters && (
-              <span className="inline-flex items-center text-xs font-medium text-gray-500 px-2 py-1 rounded-full border border-gray-200 bg-gray-50">
-                <FiFilter className="h-3 w-3 mr-1" />
-                {activeFiltersCount} {activeFiltersCount === 1 ? 'filter' : 'filters'} applied
-              </span>
-            )}
-          </div>
+  <div className="flex items-center gap-2">
+    {classesLoading ? (
+      <div className="h-5 w-40 bg-gray-200 rounded animate-pulse"></div>
+    ) : (
+      <p className="text-sm text-gray-500">
+        Showing <span className="font-medium text-gray-700">{sortedClasses.length}</span> classes
+      </p>
+    )}
+    
+    {hasActiveFilters && (
+      <span className="inline-flex items-center text-xs font-medium text-gray-500 px-2 py-1 rounded-full border border-gray-200 bg-gray-50">
+        <FiFilter className="h-3 w-3 mr-1" />
+        {activeFiltersCount} {activeFiltersCount === 1 ? 'filter' : 'filters'} applied
+      </span>
+    )}
+  </div>
           
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -399,23 +399,6 @@ const ClassesPage = () => {
                 <option value="name-asc">Name (A-Z)</option>
                 <option value="name-desc">Name (Z-A)</option>
               </select>
-            </div>
-            
-            <div className="flex border border-gray-300 rounded-md overflow-hidden">
-              <button
-                className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                onClick={() => setViewMode('grid')}
-                aria-label="Grid view"
-              >
-                <FiGrid className="h-4 w-4" />
-              </button>
-              <button
-                className={`p-2 ${viewMode === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                onClick={() => setViewMode('list')}
-                aria-label="List view"
-              >
-                <FiList className="h-4 w-4" />
-              </button>
             </div>
           </div>
         </div>
@@ -433,264 +416,171 @@ const ClassesPage = () => {
           </div>
         )}
 
-        {/* Classes Content - Conditional Rendering with Enhanced States */}
-        {classesLoading ? (
-          // Enhanced Loading State
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((index) => (
-              <div key={index} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div className="h-48 bg-gray-200 animate-pulse"></div>
-                <div className="p-5 space-y-3">
-                  <div className="h-6 w-3/4 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="h-4 w-full bg-gray-200 rounded animate-pulse"></div>
-                  <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="pt-4 flex justify-between">
-                    <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
+       {/* Classes Content - Conditional Rendering with Enhanced States */}
+{classesLoading ? (
+  // Enhanced Loading State
+  <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    {[1, 2, 3, 4, 5, 6].map((index) => (
+      <div key={index} className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="h-48 bg-gray-200 animate-pulse"></div>
+        <div className="p-5 space-y-3">
+          <div className="h-6 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 w-full bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse"></div>
+          <div className="pt-4 flex justify-between">
+            <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
           </div>
-        ) : error ? (
-          // Enhanced Error State
-          <div className="bg-red-50 border border-red-200 p-6 mt-6 rounded-xl shadow-sm flex items-start">
-            <FiAlertCircle className="h-6 w-6 text-red-500 mr-4 flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="text-lg font-medium text-red-800 mb-1">Unable to load classes</h3>
-              <p className="text-sm text-red-700">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="mt-3 text-sm font-medium text-red-700 hover:text-red-800 underline"
-              >
-                Try again
-              </button>
-            </div>
-          </div>
-        ) : sortedClasses.length === 0 ? (
-          // Enhanced Empty State
-          <div className="bg-white border border-gray-100 shadow-sm rounded-xl py-16 px-6 text-center mt-8 flex flex-col items-center">
-            <div className="bg-blue-50 p-4 rounded-full mb-4">
-              <FiInfo className="w-10 h-10 text-blue-500" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              No Classes Found {hasActiveFilters ? "Matching Your Filters" : `in ${selectedCity}`}
-            </h3>
-            <p className="mt-2 text-base text-gray-500 max-w-md mx-auto">
-              {hasActiveFilters
-                ? "Try adjusting your filters or clearing them to see all available classes."
-                : "Check back later or try searching in a different city!"}
-            </p>
-            {hasActiveFilters && (
-              <button
-                onClick={handleClearFilters}
-                className="mt-6 px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-all"
-              >
-                Clear Filters
-              </button>
-            )}
-          </div>
-        ) : (
-          // Enhanced Classes Grid with Animation
-          <motion.div 
-            variants={cardContainerVariants}
-            initial="hidden"
-            animate="visible"
-            className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}
+        </div>
+      </div>
+    ))}
+  </div>
+) : error ? (
+  // Enhanced Error State
+  <div className="bg-red-50 border border-red-200 p-6 mt-6 rounded-xl shadow-sm flex items-start">
+    <FiAlertCircle className="h-6 w-6 text-red-500 mr-4 flex-shrink-0 mt-0.5" />
+    <div>
+      <h3 className="text-lg font-medium text-red-800 mb-1">Unable to load classes</h3>
+      <p className="text-sm text-red-700">{error}</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="mt-3 text-sm font-medium text-red-700 hover:text-red-800 underline"
+      >
+        Try again
+      </button>
+    </div>
+  </div>
+) : sortedClasses.length === 0 ? (
+  // Enhanced Empty State
+  <div className="bg-white border border-gray-100 shadow-sm rounded-xl py-16 px-6 text-center mt-8 flex flex-col items-center">
+    <div className="bg-blue-50 p-4 rounded-full mb-4">
+      <FiInfo className="w-10 h-10 text-blue-500" />
+    </div>
+    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+      No Classes Found {hasActiveFilters ? "Matching Your Filters" : `in ${selectedCity}`}
+    </h3>
+    <p className="mt-2 text-base text-gray-500 max-w-md mx-auto">
+      {hasActiveFilters
+        ? "Try adjusting your filters or clearing them to see all available classes."
+        : "Check back later or try searching in a different city!"}
+    </p>
+    {hasActiveFilters && (
+      <button
+        onClick={handleClearFilters}
+        className="mt-6 px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-all"
+      >
+        Clear Filters
+      </button>
+    )}
+  </div>
+) : (
+  // Enhanced Classes Grid with Animation
+  <motion.div 
+    variants={cardContainerVariants}
+    initial="hidden"
+    animate="visible"
+    className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+  >
+    {sortedClasses.map((classItem) => (
+      <motion.div key={classItem._id} variants={cardItemVariants} layout>
+        {/* Grid View */}
+        <div className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 ease-out overflow-hidden flex flex-col h-full group">
+          <Link
+            to={`/classes/${classItem._id}`}
+            state={{ city: selectedCity }}
+            className="relative h-48 bg-gray-100 overflow-hidden"
           >
-            {sortedClasses.map((classItem) => (
-              <motion.div key={classItem._id} variants={cardItemVariants} layout>
-                {viewMode === 'grid' ? (
-                  // Grid View
-                  <div className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 ease-out overflow-hidden flex flex-col h-full group">
-                    <Link
-                      to={`/classes/${classItem._id}`}
-                      state={{ city: selectedCity }}
-                      className="relative h-48 bg-gray-100 overflow-hidden"
-                    >
-                      {classItem.imageUrl && (
-                        <div 
-                          className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-                          style={{ backgroundImage: `url(${classItem.imageUrl})` }}
-                        ></div>
-                      )}
-                      
-                      <div className="absolute top-3 right-3 flex flex-col gap-2">
-                        {getClassTypeBadge(classItem.type)}
-                        {getGenderBadge(classItem.targetGender)}
-                      </div>
-                    </Link>
-                    
-                    <div className="p-5 flex flex-col flex-grow">
-                      <Link
-                        to={`/classes/${classItem._id}`}
-                        state={{ city: selectedCity }}
-                        className="block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                          {classItem.title || 'Untitled Class'}
-                        </h3>
-                      </Link>
-                      
-                      <p className="text-sm text-gray-600 line-clamp-3 flex-grow mb-5 min-h-[60px]">
-                        {classItem.description || "No description available."}
-                      </p>
-                      
-                      <div className="mt-auto space-y-3 text-sm text-gray-700 border-t border-gray-100 pt-4">
-                        {/* Instructor */}
-                        <div className="flex items-center">
-                          <div className="bg-blue-50 p-1.5 rounded-full mr-3">
-                            <FiUser className="flex-shrink-0 h-4 w-4 text-blue-500" />
-                          </div>
-                          <span className="font-medium">{classItem.instructor?.name || "Instructor TBD"}</span>
-                        </div>
+            {classItem.imageUrl && (
+              <div 
+                className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                style={{ backgroundImage: `url(${classItem.imageUrl})` }}
+              ></div>
+            )}
+            <div className="absolute top-3 right-3 flex flex-col gap-2">
+              {getClassTypeBadge(classItem.type)}
+              {getGenderBadge(classItem.targetGender)}
+            </div>
+          </Link>
 
-                        {/* Location */}
-                        <div className="flex items-center min-w-0">
-                          <div className="bg-blue-50 p-1.5 rounded-full mr-3">
-                            <FiMapPin className="flex-shrink-0 h-4 w-4 text-blue-500" />
-                          </div>
-                          <span className="truncate" title={classItem.location?.address || classItem.city || ""}>
-                            {classItem.location?.address || classItem.city || "Location TBD"}
-                          </span>
-                        </div>
+          <div className="p-5 flex flex-col flex-grow">
+            <Link
+              to={`/classes/${classItem._id}`}
+              state={{ city: selectedCity }}
+              className="block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                {classItem.title || 'Untitled Class'}
+              </h3>
+            </Link>
 
-                        {/* Schedule */}
-                        <div className="flex items-center">
-                          <div className="bg-blue-50 p-1.5 rounded-full mr-3">
-                            <FiCalendar className="flex-shrink-0 h-4 w-4 text-blue-500" />
-                          </div>
-                          <span>{formatSchedule(classItem)}</span>
-                        </div>
+            <p className="text-sm text-gray-600 line-clamp-3 flex-grow mb-5 min-h-[60px]">
+            {(classItem.description || classItem.details || '').trim() || 'No description available'}
+            </p>
 
-                        {/* Cost */}
-                        <div className="flex items-center">
-                          <div className="bg-blue-50 p-1.5 rounded-full mr-3">
-                            <FiDollarSign className="flex-shrink-0 h-4 w-4 text-blue-500" />
-                          </div>
-                          <span className="font-medium">
-                            {classItem.cost === 0 ? "Free" : classItem.cost ? `$${classItem.cost}` : "Price TBD"}
-                          </span>
-                        </div>
+            <div className="mt-auto space-y-3 text-sm text-gray-700 border-t border-gray-100 pt-4">
+              {/* Instructor */}
+              <div className="flex items-center">
+                <div className="bg-blue-50 p-1.5 rounded-full mr-3">
+                  <FiUser className="flex-shrink-0 h-4 w-4 text-blue-500" />
+                </div>
+                <span className="font-medium">{classItem.instructor?.name || "Instructor TBD"}</span>
+              </div>
 
-                        {/* Ages (Conditional) */}
-                        {(classItem.targetAgeRange?.min || classItem.targetAgeRange?.max) && (
-                          <div className="flex items-center">
-                            <div className="bg-blue-50 p-1.5 rounded-full mr-3">
-                              <FiUsers className="flex-shrink-0 h-4 w-4 text-blue-500" />
-                            </div>
-                            <span>
-                              Ages {classItem.targetAgeRange?.min || "?"}
-                              {classItem.targetAgeRange?.max ? ` - ${classItem.targetAgeRange.max}` : "+"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+              {/* Location */}
+              <div className="flex items-center min-w-0">
+                <div className="bg-blue-50 p-1.5 rounded-full mr-3">
+                  <FiMapPin className="flex-shrink-0 h-4 w-4 text-blue-500" />
+                </div>
+                <span className="truncate" title={classItem.city || "Location TBD"}>
+                  {classItem.city || "Location TBD"}
+                </span>
+              </div>
 
-                      {/* View Details Button */}
-                      <Link
-                        to={`/classes/${classItem._id}`}
-                        state={{ city: selectedCity }}
-                        className="mt-5 text-blue-600 font-medium text-sm flex items-center group-hover:text-blue-700"
-                      >
-                        View details
-                        <FiChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  // List View
-                  <div className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 ease-out overflow-hidden group">
-                    <div className="sm:flex">
-                      <Link
-                        to={`/classes/${classItem._id}`}
-                        state={{ city: selectedCity }}
-                        className="relative h-48 sm:h-auto sm:w-48 sm:flex-shrink-0 block bg-gray-100"
-                      >
-                        {classItem.imageUrl && (
-                          <div 
-                            className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-                            style={{ backgroundImage: `url(${classItem.imageUrl})` }}
-                          ></div>
-                        )}
-                      </Link>
-                      
-                      <div className="flex flex-col flex-grow">
-                        <div className="p-5">
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {getClassTypeBadge(classItem.type)}
-                            {getGenderBadge(classItem.targetGender)}
-                          </div>
-                          
-                          <Link
-                            to={`/classes/${classItem._id}`}
-                            state={{ city: selectedCity }}
-                            className="block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                          >
-                            <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                              {classItem.title || 'Untitled Class'}
-                            </h3>
-                          </Link>
-                          
-                          <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                            {classItem.description || "No description available."}
-                          </p>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 mt-4">
-                            <div className="flex items-center text-sm">
-                              <FiMapPin className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-                              <span className="truncate">{classItem.location?.address || classItem.city}</span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <FiCalendar className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-                              <span>{formatSchedule(classItem)}</span>
-                            </div>
-                            {classItem.schedule && classItem.schedule[0] && (
-                              <div className="flex items-center text-sm">
-                                <FiClock className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-                                <span>
-                                  {formatTime(classItem.schedule[0].startTime)} - {formatTime(classItem.schedule[0].endTime)}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex items-center text-sm">
-                              <FiUsers className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-                              <span>
-                                {classItem.capacity 
-                                  ? `Capacity: ${classItem.capacity} students` 
-                                  : classItem.targetAgeRange?.min || classItem.targetAgeRange?.max 
-                                    ? `Ages ${classItem.targetAgeRange?.min || "?"} ${classItem.targetAgeRange?.max ? `- ${classItem.targetAgeRange.max}` : "+"}`
-                                    : "Open to all"
-                                }
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="px-5 py-4 border-t mt-auto flex justify-between items-center">
-                          <div className="font-medium text-gray-900">
-                            {classItem.cost === 0 ? (
-                              <span className="text-green-600">Free</span>
-                            ) : (
-                              <span>${classItem.cost}</span>
-                            )}
-                          </div>
-                          <Link
-                            to={`/classes/${classItem._id}`}
-                            state={{ city: selectedCity }}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
-                          >
-                            View Details
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+              {/* Schedule */}
+              <div className="flex items-center">
+                <div className="bg-blue-50 p-1.5 rounded-full mr-3">
+                  <FiCalendar className="flex-shrink-0 h-4 w-4 text-blue-500" />
+                </div>
+                <span>{formatSchedule(classItem)}</span>
+              </div>
+
+              {/* Cost */}
+              <div className="flex items-center">
+                <div className="bg-blue-50 p-1.5 rounded-full mr-3">
+                  <FiDollarSign className="flex-shrink-0 h-4 w-4 text-blue-500" />
+                </div>
+                <span className="font-medium">
+                  {classItem.cost === 0 ? "Free" : classItem.cost !== undefined ? `$${classItem.cost}` : "Price TBD"}
+                </span>
+              </div>
+
+              {/* Capacity */}
+              <div className="flex items-center">
+                <div className="bg-blue-50 p-1.5 rounded-full mr-3">
+                  <FiUsers className="flex-shrink-0 h-4 w-4 text-blue-500" />
+                </div>
+                <span>
+                  {classItem.registeredStudents?.length ?? 0}/{classItem.capacity ?? '?'} spots filled
+                </span>
+              </div>
+            </div>
+
+            {/* View Details Button */}
+            <Link
+              to={`/classes/${classItem._id}`}
+              state={{ city: selectedCity }}
+              className="mt-5 text-blue-600 font-medium text-sm flex items-center group-hover:text-blue-700"
+            >
+              View details
+              <FiChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+    ))}
+  </motion.div>
+)}
+
 
         {/* Featured Testimonial Section */}
         <section className="py-16 mt-16 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-100/50 overflow-hidden relative">

@@ -38,7 +38,18 @@ const ClassesPage = () => {
                 setLoading(true);
                 setError(null);
                 const data = await getClasses();
-                setClasses(data || []); // Ensure classes is always an array
+                
+                // Process the data to ensure registrationCount is available
+                const processedData = data.map(cls => ({
+                    ...cls,
+                    registrationCount: cls.registeredStudents?.length || 0,
+                    // Add lowercase fields for search/sort
+                    title_lower: cls.title?.toLowerCase() || '',
+                    city_lower: cls.city?.toLowerCase() || '',
+                    instructorName_lower: cls.instructor?.name?.toLowerCase() || ''
+                }));
+                
+                setClasses(processedData || []);
             } catch (err) {
                 setError('Failed to load classes. Please try again later.');
                 console.error("Fetch classes error:", err);
@@ -47,7 +58,7 @@ const ClassesPage = () => {
                 setLoading(false);
             }
         };
-
+    
         fetchClasses();
     }, []);
 
@@ -101,8 +112,8 @@ const ClassesPage = () => {
                     fieldB = b.capacity ?? 0;
                     break;
                 case 'enrollment': // Sort by number of registered students
-                    fieldA = a.registeredStudents?.length ?? 0;
-                    fieldB = b.registeredStudents?.length ?? 0;
+                fieldA = a.enrollmentCount ?? 0;
+                fieldB = b.enrollmentCount ?? 0;
                     break;
                 default:
                     return 0; // Should not happen if field is always set
@@ -357,7 +368,7 @@ const ClassesPage = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredAndSortedClasses.length > 0 ? (
                                 filteredAndSortedClasses.map((cls) => {
-                                    const enrollmentCount = cls.registeredStudents?.length ?? 0;
+                                    const enrollmentCount = cls.enrollmentCount ?? 0;
                                     const capacity = cls.capacity ?? 0;
                                     // Prevent division by zero, ensure capacity is positive
                                     const enrollmentPercentage = capacity > 0 ? (enrollmentCount / capacity) * 100 : 0;

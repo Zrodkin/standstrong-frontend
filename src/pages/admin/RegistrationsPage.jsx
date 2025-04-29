@@ -1,5 +1,6 @@
 "use client"
 
+
 // src/pages/admin/RegistrationsPage.jsx
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Link } from "react-router-dom"
@@ -24,9 +25,12 @@ import {
   FiX,
 } from "react-icons/fi"
 
+
 // --- Service functions ---
 import { getClasses } from "/src/services/classService.js"
 import { getClassRegistrations, updateRegistration, deleteRegistration } from "/src/services/registrationService.js"
+import { getAllCityRecords } from "/src/services/cityService.js";
+
 
 // --- Reusable Components ---
 const LoadingSpinner = ({ size = "medium", message = "Loading..." }) => {
@@ -36,6 +40,7 @@ const LoadingSpinner = ({ size = "medium", message = "Loading..." }) => {
     large: "h-12 w-12",
   }
 
+
   return (
     <div className="flex flex-col items-center justify-center py-8">
       <FiLoader className={`animate-spin ${sizeClasses[size]} text-primary-600 mb-3`} />
@@ -43,6 +48,7 @@ const LoadingSpinner = ({ size = "medium", message = "Loading..." }) => {
     </div>
   )
 }
+
 
 const Alert = ({ type, message, onDismiss }) => {
   const types = {
@@ -66,7 +72,9 @@ const Alert = ({ type, message, onDismiss }) => {
     },
   }
 
+
   const style = types[type] || types.info
+
 
   return (
     <div
@@ -88,6 +96,7 @@ const Alert = ({ type, message, onDismiss }) => {
   )
 }
 
+
 const EmptyState = ({ icon, title, description, action }) => (
   <div className="text-center px-6 py-12 bg-white rounded-xl shadow-sm border border-gray-100">
     <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 mb-4">
@@ -99,6 +108,7 @@ const EmptyState = ({ icon, title, description, action }) => (
   </div>
 )
 
+
 const Badge = ({ status }) => {
   const styles = {
     enrolled: "bg-green-100 text-green-800 border-green-200",
@@ -107,12 +117,14 @@ const Badge = ({ status }) => {
     cancelled_by_user: "bg-gray-100 text-gray-800 border-gray-200",
   }
 
+
   const icons = {
     enrolled: <FiUserCheck className="h-3 w-3 mr-1" />,
     waitlisted: <FiClock className="h-3 w-3 mr-1" />,
     cancelled_by_admin: <FiUserX className="h-3 w-3 mr-1" />,
     cancelled_by_user: <FiUserX className="h-3 w-3 mr-1" />,
   }
+
 
   const displayText = {
     enrolled: "Enrolled",
@@ -121,9 +133,11 @@ const Badge = ({ status }) => {
     cancelled_by_user: "Cancelled (User)",
   }
 
+
   const style = styles[status] || "bg-gray-100 text-gray-800 border-gray-200"
   const icon = icons[status] || null
   const text = displayText[status] || status.replace(/_/g, " ")
+
 
   return (
     <span className={`px-2.5 py-1 inline-flex items-center text-xs font-medium rounded-full border ${style}`}>
@@ -133,8 +147,10 @@ const Badge = ({ status }) => {
   )
 }
 
+
 const ConfirmDialog = ({ isOpen, title, message, confirmText, cancelText, onConfirm, onCancel }) => {
   if (!isOpen) return null
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -165,6 +181,7 @@ const ConfirmDialog = ({ isOpen, title, message, confirmText, cancelText, onConf
   )
 }
 
+
 const RegistrationsPage = () => {
   const [classes, setClasses] = useState([])
   const [selectedClassId, setSelectedClassId] = useState("")
@@ -177,6 +194,11 @@ const RegistrationsPage = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, type: null, registrationId: null })
   const [statusFilter, setStatusFilter] = useState("all")
+  const [cityFilter, setCityFilter] = useState("all")
+  const [allCities, setAllCities] = useState([]); // To store city objects { _id, name, ... }
+  const [loadingCitiesFilter, setLoadingCitiesFilter] = useState(true);
+  const [errorCitiesFilter, setErrorCitiesFilter] = useState("");
+
 
   // --- Fetch Classes for Dropdown ---
   useEffect(() => {
@@ -196,6 +218,26 @@ const RegistrationsPage = () => {
     }
     fetchClasses()
   }, [])
+
+
+  useEffect(() => {
+    const fetchCitiesForFilter = async () => {
+      setLoadingCitiesFilter(true);
+      setErrorCitiesFilter(""); // Clear previous errors
+      try {
+        const citiesData = await getAllCityRecords(); // Call the new service function
+        setAllCities(citiesData || []);
+      } catch (err) {
+        console.error("Error fetching cities for filter:", err);
+        setErrorCitiesFilter("Failed to load city filter options.");
+        setAllCities([]);
+      } finally {
+        setLoadingCitiesFilter(false);
+      }
+    };
+    fetchCitiesForFilter();
+  }, []); // Empty dependency array means run once on mount
+
 
   // --- Fetch Registrations when Class Changes ---
   const fetchRegistrationsForClass = useCallback(async (classId) => {
@@ -218,9 +260,11 @@ const RegistrationsPage = () => {
     }
   }, [])
 
+
   useEffect(() => {
     fetchRegistrationsForClass(selectedClassId)
   }, [selectedClassId, fetchRegistrationsForClass])
+
 
   // --- Handle Actions ---
   const openStatusChangeDialog = (registrationId, currentStatus) => {
@@ -234,6 +278,7 @@ const RegistrationsPage = () => {
     })
   }
 
+
   const openDeleteDialog = (registrationId) => {
     setConfirmDialog({
       isOpen: true,
@@ -243,6 +288,7 @@ const RegistrationsPage = () => {
       message: "Are you sure you want to unenroll this student? This action cannot be undone.",
     })
   }
+
 
   const handleStatusChange = async (registrationId, newStatus) => {
     setProcessingRegistrationId(registrationId)
@@ -260,6 +306,7 @@ const RegistrationsPage = () => {
     }
   }
 
+
   const handleDelete = async (registrationId) => {
     setProcessingRegistrationId(registrationId)
     setError("")
@@ -276,8 +323,10 @@ const RegistrationsPage = () => {
     }
   }
 
+
   const handleConfirmDialog = async (newStatus) => {
     const { type, registrationId } = confirmDialog
+
 
     if (type === "status") {
       await handleStatusChange(registrationId, newStatus)
@@ -285,20 +334,25 @@ const RegistrationsPage = () => {
       await handleDelete(registrationId)
     }
 
+
     setConfirmDialog({ ...confirmDialog, isOpen: false })
   }
+
 
   const handleCancelDialog = () => {
     setConfirmDialog({ ...confirmDialog, isOpen: false })
   }
 
+
   const selectedClassDetails = useMemo(() => {
     return classes.find((c) => c._id === selectedClassId)
   }, [classes, selectedClassId])
 
+
   // --- Filtered Registrations ---
   const filteredRegistrations = useMemo(() => {
     if (!registrations.length) return []
+
 
     return registrations.filter((reg) => {
       // Status filter
@@ -306,24 +360,39 @@ const RegistrationsPage = () => {
         return false
       }
 
+
       // Search filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase()
         const fullName = `${reg.user?.firstName || ""} ${reg.user?.lastName || ""}`.toLowerCase()
         const email = (reg.user?.email || "").toLowerCase()
 
+
         return fullName.includes(searchLower) || email.includes(searchLower)
       }
+
 
       return true
     })
   }, [registrations, searchTerm, statusFilter])
 
+
+  const filteredClassesForDropdown = useMemo(() => {
+    if (cityFilter === 'all') {
+        return classes; // Show all classes if 'All Cities' is selected
+    }
+    // Filter the classes fetched initially based on the city name in the filter state
+    return classes.filter(cls => cls.city === cityFilter);
+}, [classes, cityFilter]); // Dependencies: recalculate when classes or cityFilter change
+
+
   // --- Export to CSV ---
   const exportToCSV = () => {
     if (!filteredRegistrations.length) return
 
+
     const headers = ["First Name", "Last Name", "Email", "Status", "Registration Date"]
+
 
     const csvContent = [
       headers.join(","),
@@ -338,6 +407,7 @@ const RegistrationsPage = () => {
       }),
     ].join("\n")
 
+
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
@@ -348,12 +418,14 @@ const RegistrationsPage = () => {
     document.body.removeChild(link)
   }
 
+
   return (
     <div className="max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center mb-4 md:mb-0">
           <FiList className="mr-3 h-6 w-6 text-primary-600" /> Class Registrations
         </h1>
+
 
         {selectedClassId && registrations.length > 0 && (
           <button
@@ -366,37 +438,98 @@ const RegistrationsPage = () => {
         )}
       </div>
 
+
       {/* Global Error/Success Display */}
       {error && <Alert type="error" message={error} onDismiss={() => setError("")} />}
       {success && <Alert type="success" message={success} onDismiss={() => setSuccess("")} />}
 
+
       {/* Class Selector Card */}
       <div className="mb-8 bg-white p-6 shadow-sm rounded-xl border border-gray-100">
+        {/* --- CITY FILTER DROPDOWN --- */}
+        <div className="mb-4">
+           <label htmlFor="cityFilterSelect" className="block text-sm font-medium text-gray-700 mb-1">
+             Filter Classes by City
+           </label>
+           <select
+             id="cityFilterSelect"
+             className="block w-full md:w-1/2 lg:w-1/3 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-lg"
+             value={cityFilter}
+             onChange={(e) => {
+              const newCity = e.target.value;
+              setCityFilter(newCity);
+              setSearchTerm(""); // Reset search term
+              setRegistrations([]); // Clear registrations
+            
+              const matchingClasses = newCity === "all"
+                ? classes
+                : classes.filter(cls => cls.city === newCity);
+            
+              if (matchingClasses.length === 1) {
+                setSelectedClassId(matchingClasses[0]._id); // Auto-select class
+              } else {
+                setSelectedClassId(""); // Reset if not exactly one match
+              }
+            }}
+             // Disable while loading cities or if there's an error fetching them
+             disabled={loadingCitiesFilter || !!errorCitiesFilter || allCities.length === 0}
+           >
+             <option value="all">-- All Cities --</option>
+             {/* Map over the allCities state */}
+             {allCities.map((city) => (
+               // Use city._id for key, city.name for value and display text
+               <option key={city._id} value={city.name}>
+                 {city.name}
+               </option>
+             ))}
+           </select>
+           {/* Optional: Show loading/error state for the filter */}
+           {loadingCitiesFilter && (
+                <div className="flex items-center mt-2 text-sm text-gray-500">
+                  <FiLoader className="animate-spin h-3 w-3 mr-2" /> Loading cities...
+                </div>
+           )}
+           {errorCitiesFilter && !loadingCitiesFilter &&(
+               <p className="mt-2 text-sm text-red-600">{errorCitiesFilter}</p>
+           )}
+         </div>
+       {/* --- END CITY FILTER DROPDOWN --- */}
+
+
+
+
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div className="flex-1">
             <label htmlFor="classSelect" className="block text-sm font-medium text-gray-700 mb-1">
               Select a Class to View Registrations
             </label>
             <select
-              id="classSelect"
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-lg"
-              value={selectedClassId}
-              onChange={(e) => setSelectedClassId(e.target.value)}
-              disabled={loadingClasses}
-            >
-              <option value="">-- Select a Class --</option>
-              {classes.map((cls) => (
-                <option key={cls._id} value={cls._id}>
-                  {cls.title} {cls.city && `(${cls.city})`}
-                </option>
-              ))}
-            </select>
-            {loadingClasses && (
-              <div className="flex items-center mt-2 text-sm text-gray-500">
-                <FiLoader className="animate-spin h-3 w-3 mr-2" /> Loading classes...
-              </div>
-            )}
+ id="classSelect"
+  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-lg"
+  value={selectedClassId}
+  onChange={(e) => setSelectedClassId(e.target.value)}
+   // Disable if loading classes OR if no classes match the current city filter
+   disabled={loadingClasses || filteredClassesForDropdown.length === 0}
+ >
+   <option value="">-- Select a Class --</option>
+   {/* --- CHANGE classes.map to filteredClassesForDropdown.map --- */}
+   {filteredClassesForDropdown.map((cls) => (
+     <option key={cls._id} value={cls._id}>
+       {cls.title} {cls.city && `(${cls.city})`}
+     </option>
+   ))}
+ </select>
+ {/* Optional: Add message if no classes match city filter */}
+ {!loadingClasses && cityFilter !== 'all' && filteredClassesForDropdown.length === 0 && (
+     <p className="mt-2 text-sm text-gray-500">No classes found in {cityFilter}.</p>
+ )}
+ {loadingClasses && (
+    <div className="flex items-center mt-2 text-sm text-gray-500">
+      <FiLoader className="animate-spin h-3 w-3 mr-2" /> Loading classes...
+    </div>
+ )}
           </div>
+
 
           {selectedClassId && (
             <button
@@ -410,6 +543,7 @@ const RegistrationsPage = () => {
           )}
         </div>
       </div>
+
 
       {/* Registrations Section */}
       {selectedClassId ? (
@@ -425,6 +559,7 @@ const RegistrationsPage = () => {
                   </span>
                 )}
               </h2>
+
 
               {registrations.length > 0 && (
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -442,6 +577,7 @@ const RegistrationsPage = () => {
                     />
                   </div>
 
+
                   {/* Status Filter */}
                   <select
                     value={statusFilter}
@@ -458,6 +594,7 @@ const RegistrationsPage = () => {
               )}
             </div>
           </div>
+
 
           {loadingRegistrations ? (
             <LoadingSpinner message="Loading registrations..." />
@@ -553,6 +690,7 @@ const RegistrationsPage = () => {
                                 </select>
                               </div>
 
+
                               <button
                                 onClick={() => openDeleteDialog(reg._id)}
                                 className="text-red-600 hover:text-red-900 disabled:opacity-50 p-1 rounded-md hover:bg-red-50"
@@ -561,6 +699,7 @@ const RegistrationsPage = () => {
                               >
                                 <FiTrash2 className="h-4 w-4" />
                               </button>
+
 
                               {processingRegistrationId === reg._id && (
                                 <FiLoader className="h-4 w-4 animate-spin text-gray-500" />
@@ -615,6 +754,7 @@ const RegistrationsPage = () => {
         />
       )}
 
+
       {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
@@ -628,5 +768,6 @@ const RegistrationsPage = () => {
     </div>
   )
 }
+
 
 export default RegistrationsPage
