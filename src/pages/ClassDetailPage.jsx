@@ -434,7 +434,9 @@ else {
       </div>
 
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden py-16 md:py-24">
+      <div className="relative text-white overflow-hidden py-16 md:py-24" style={{
+  background: "linear-gradient(90deg, rgba(21, 111, 176, 1) 0%, rgba(97, 174, 199, 1) 30%, rgba(97, 174, 199, 1) 70%, rgba(21, 111, 176, 1) 100%)"
+}}>
   <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:16px_16px]"></div>
   <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
   {classData.imageUrl && (
@@ -460,10 +462,10 @@ else {
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{classData.title}</h1>
 
         {classData.instructor?.name && (
-          <p className="text-white/90 font-medium">
-            Instructor: {classData.instructor.name}
-          </p>
-        )}
+  <p className="text-white font-semibold text-lg">
+      {classData.instructor.name}
+  </p>
+)}
       </div>
 
       {classData.partnerLogo && (
