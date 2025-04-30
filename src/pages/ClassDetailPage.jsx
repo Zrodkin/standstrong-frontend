@@ -132,7 +132,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, classTitle, isLoading }
 const TabButton = ({ active, onClick, icon, children }) => (
   <button
     onClick={onClick}
-    className={`flex items-center px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+    className={`flex items-center px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex-shrink-0 ${
       active ? "bg-primary-50 text-primary-700 border-primary-200 border" : "text-gray-600 hover:bg-gray-100"
     }`}
   >
@@ -166,6 +166,7 @@ const ClassDetailPage = () => {
   })
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isFlyerModalOpen, setIsFlyerModalOpen] = useState(false);
+  const [isTabMenuOpen, setIsTabMenuOpen] = useState(false);
 
   // --- Fetch Class ---
   const fetchClassData = useCallback(async () => {
@@ -225,6 +226,19 @@ const ClassDetailPage = () => {
       console.log("API base URL:", import.meta.env.VITE_API_URL)
     }
   }, [classData])
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isTabMenuOpen && !event.target.closest(".tab-dropdown")) {
+        setIsTabMenuOpen(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isTabMenuOpen]);
 
   // --- Image Helpers ---
   const getFullImageUrl = (partialUrl, type = 'image') => {
@@ -501,42 +515,33 @@ const ClassDetailPage = () => {
         <div className="lg:grid lg:grid-cols-3 lg:gap-x-12 gap-y-10">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Tabs */}
-            <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
-              <TabButton
-                active={activeTab === "about"}
-                onClick={() => setActiveTab("about")}
-                icon={<FiBookOpen className="h-4 w-4" />}
-              >
-                About
-              </TabButton>
-              <TabButton
-                active={activeTab === "schedule"}
-                onClick={() => setActiveTab("schedule")}
-                icon={<FiCalendar className="h-4 w-4" />}
-              >
-                      Schedule
-        </TabButton>
-        {classData.instructor?.bio && (
-          <TabButton
-            active={activeTab === "instructor"}
-            onClick={() => setActiveTab("instructor")}
-            icon={<FiUserCheck className="h-4 w-4" />}
-          >
-            Instructor
-          </TabButton>
-        )}
-        {classData.imageUrl && (
-          <TabButton
-            active={activeTab === "flyer"}
-            onClick={() => setActiveTab("flyer")}
-            icon={<FiImage className="h-4 w-4" />}
-          >
-            Flyer
-          </TabButton>
-        )}
-      </div>
-
+          <div className="relative">
+  <div className="flex space-x-2 mb-6 overflow-x-auto pb-2 px-1 scrollbar-hide scroll-smooth -mx-1">
+    <TabButton
+      active={activeTab === "about"}
+      onClick={() => setActiveTab("about")}
+      icon={<FiBookOpen className="h-4 w-4" />}
+    >
+      About
+    </TabButton>
+    <TabButton
+      active={activeTab === "schedule"}
+      onClick={() => setActiveTab("schedule")}
+      icon={<FiCalendar className="h-4 w-4" />}
+    >
+      Schedule
+    </TabButton>
+    {classData.instructor?.bio && (
+      <TabButton
+        active={activeTab === "instructor"}
+        onClick={() => setActiveTab("instructor")}
+        icon={<FiUserCheck className="h-4 w-4" />}
+      >
+        Instructor
+      </TabButton>
+    )}
+  </div>
+</div>
             {/* Tab Content */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               {/* About Tab */}
@@ -604,49 +609,31 @@ const ClassDetailPage = () => {
                 </div>
               )}
  
-                       {/* Flyer Tab - UPDATED */}
-          {activeTab === "flyer" && classData.imageUrl && (
-            // Container - No padding here, image fills this area
-            <div className=""> 
-              {/* Image Container - Make it clickable */}
-              <div 
-                className="relative overflow-hidden cursor-pointer group" // Added cursor-pointer and group
-                onClick={() => setIsFlyerModalOpen(true)} // <-- THIS MAKES IT CLICKABLE
-              > 
-                <img
-                  src={getFullImageUrl(classData.imageUrl, 'image') || "/placeholder.svg"}
-                  alt={`${classData.title} flyer - Click to enlarge`} // Updated alt text
-                  // Image fills width, height adjusts, uses block display
-                  className="w-full h-auto block" 
-                  onError={(e) => {
-                    // --- Your existing error handling ---
-                    console.warn("Failed to load class flyer:", e.target.src);
-                    e.target.src = "/placeholder.svg";
-                    if (!e.target.dataset.fallbackAttempted) {
-                      const apiBaseUrl = import.meta.env.VITE_API_URL || "";
-                      const filename = classData.imageUrl?.split("/").pop();
-                      if (apiBaseUrl && filename) {
-                        e.target.src = `${apiBaseUrl}/uploads/class-images/${filename}`;
-                        e.target.dataset.fallbackAttempted = "true";
-                      } else {
-                        e.target.src = "/placeholder.svg";
-                      }
-                    } else {
-                      e.target.src = "/placeholder.svg";
-                    }
-                    // --- End error handling ---
-                  }}
-                />
-                {/* Optional: Add subtle overlay/icon on hover */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    {/* Make sure FiExternalLink is imported if you use this */}
-                    {/* <FiExternalLink className="text-white h-10 w-10" /> */} 
-                </div>
-              </div>
+                     
             </div>
-          )}
-          {/* End Flyer Tab */}
-            </div>
+         {/* Enhanced View Flyer Button */}
+{classData.imageUrl && (
+  <div className="mt-6">
+    <button
+      onClick={() => setIsFlyerModalOpen(true)}
+      className="group w-full flex items-center justify-center px-6 py-4 rounded-xl border border-[#61aec7]/30 
+            text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(21, 111, 176, 1) 0%, rgba(97, 174, 199, 1) 30%, rgba(97, 174, 199, 1) 70%, rgba(21, 111, 176, 1) 100%)",
+            }}
+  
+    >
+      <div className="mr-3 bg-white/20 rounded-full p-2 group-hover:bg-white/30 transition-all duration-300">
+        <FiImage className="h-5 w-5" />
+      </div>
+      <span className="text-lg tracking-wide">View Flyer</span>
+      <div className="ml-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+        <FiChevronRight className="h-5 w-5" />
+      </div>
+    </button>
+  </div>
+)}
             {/* --- Flyer Modal --- */}
       {isFlyerModalOpen && classData.imageUrl && (
         <div 
