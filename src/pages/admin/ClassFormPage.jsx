@@ -81,6 +81,7 @@ const ClassFormPage = () => {
     registrationType: "internal",
     externalRegistrationLink: "",
     partnerLogo: "",
+    imageUrl: "",
   })
 
   // New helper states
@@ -92,7 +93,9 @@ const ClassFormPage = () => {
   const [hasMaxAge, setHasMaxAge] = useState(true)
   const [activeSection, setActiveSection] = useState("basic") // Track which section is expanded
   const [previewMode, setPreviewMode] = useState(false) // For session generator preview
-
+  const [imagePreview, setImagePreview] = useState("")
+  const [uploadingImage, setUploadingImage] = useState(false)
+  
   // Repeat Weekly settings
   const [repeatSettings, setRepeatSettings] = useState({
     enabled: false,
@@ -188,6 +191,8 @@ const ClassFormPage = () => {
                   }))
                 : [{ date: "", startTime: "", endTime: "" }], // Default if no schedule fetched or empty
 
+
+                
             // Explicitly handle nested objects with defaults
             targetAgeRange: {
               min: classData.targetAgeRange?.min || 0, // Use optional chaining and default
@@ -207,8 +212,15 @@ const ClassFormPage = () => {
             registrationType: classData.registrationType || "internal",
             externalRegistrationLink: classData.externalRegistrationLink || "",
           }))
-          // --- MODIFIED SECTION END ---
 
+          
+          // --- MODIFIED SECTION END ---
+          if (classData.imageUrl) {
+            const fullImageUrl = constructFullUrl(classData.imageUrl);
+            setImagePreview(fullImageUrl);
+          }
+
+          
           // Update hasMaxAge based on the potentially updated targetAgeRange.max
           setHasMaxAge(!!classData.targetAgeRange?.max) // Use optional chaining
         } catch (err) {
@@ -233,7 +245,7 @@ const ClassFormPage = () => {
     try {
       setUploadingLogo(true)
       setError(null)
-      const { data } = await api.post("/upload", formDataUpload, {
+      const { data } = await api.post("/upload?type=logo", formDataUpload, {
         headers: { "Content-Type": "multipart/form-data" },
       })
 
@@ -254,6 +266,41 @@ const ClassFormPage = () => {
       setError("Logo upload failed. Please try again.")
     } finally {
       setUploadingLogo(false)
+    }
+  }
+
+  const uploadClassImage = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+  
+    const formDataUpload = new FormData()
+    formDataUpload.append("file", file)
+  
+    try {
+      setUploadingImage(true)
+      setError(null)
+      // Add the type parameter to the URL
+      const { data } = await api.post("/upload?type=image", formDataUpload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+  
+      const uploadedRelativePath = data.filePath || data.path || ""
+      const fullImageUrlAfterUpload = constructFullUrl(uploadedRelativePath)
+  
+      // Set state with log inside
+      setFormData((prev) => {
+        return {
+          ...prev,
+          imageUrl: uploadedRelativePath, // Store the relative path instead of the full URL
+        }
+      })
+      setImagePreview(fullImageUrlAfterUpload)
+      setSuccess("Image uploaded successfully!")
+    } catch (err) {
+      console.error("Failed to upload image:", err)
+      setError("Image upload failed. Please try again.")
+    } finally {
+      setUploadingImage(false)
     }
   }
 
@@ -518,12 +565,15 @@ const ClassFormPage = () => {
 
       // --- Convert logo URL back to relative path for backend ---
       const relativeLogoPathToSend = getRelativePath(formData.partnerLogo) // Use helper
+      const relativeImagePathToSend = getRelativePath(formData.imageUrl);
 
       // Prepare data for submission
       const formattedData = {
         ...formData, // Spread other data first
         // --- Use the relative path expected by the backend ---
         partnerLogo: relativeLogoPathToSend, // Explicitly use the converted path
+        imageUrl: relativeImagePathToSend,
+
         // --- End Use Relative Path ---
         // Ensure numeric fields are numbers
         cost: Number.parseFloat(formData.cost) || 0,
@@ -807,6 +857,69 @@ const ClassFormPage = () => {
 </div>
             </div>
           )}
+        {/* Class Image Upload */}
+<div className="mt-6">
+  <label htmlFor="classImageFile" className="block text-sm font-medium text-gray-700 mb-1">
+    Class Image
+  </label>
+  <div className="flex items-center space-x-4">
+    <div className="flex-1">
+      <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+        <div className="space-y-1 text-center">
+          <FiImage className="mx-auto h-12 w-12 text-gray-400" />
+          <div className="flex text-sm text-gray-600">
+            <label
+              htmlFor="classImageFile"
+              className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+            >
+              <span>Upload a file</span>
+              <input
+                id="classImageFile"
+                name="classImageFile"
+                type="file"
+                accept="image/png, image/jpeg, image/gif, image/webp"
+                className="sr-only"
+                onChange={uploadClassImage}
+                disabled={uploadingImage}
+              />
+            </label>
+            <p className="pl-1">or drag and drop</p>
+          </div>
+          <p className="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 2MB</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Image Preview */}
+    {imagePreview && (
+      <div className="flex-shrink-0 w-32">
+        <div className="relative">
+          <img
+            src={imagePreview || "/placeholder.svg"}
+            alt="Class Image Preview"
+            className="h-24 w-auto object-contain border border-gray-200 rounded-md p-1"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setImagePreview("")
+              setFormData((prev) => ({ ...prev, imageUrl: "" }))
+            }}
+            className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-sm border border-gray-200 text-gray-500 hover:text-red-500"
+          >
+            <FiX className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+  {uploadingImage && (
+    <div className="mt-2 flex items-center text-sm text-primary-600">
+      <FiRefreshCw className="animate-spin mr-2 h-4 w-4" />
+      Uploading image...
+    </div>
+  )}
+</div>
         </section>
 
         {/* --- Instructor Info Section --- */}

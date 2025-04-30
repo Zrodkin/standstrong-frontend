@@ -1,5 +1,3 @@
-"use client"
-
 // frontend/pages/ClassDetailPage.jsx
 import { useState, useEffect, useCallback } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
@@ -21,6 +19,7 @@ import {
   FiLoader,
   FiBookOpen,
   FiChevronRight,
+  FiImage,
 } from "react-icons/fi"
 import { useAuth } from "/src/context/AuthContext.jsx"
 import { format } from "date-fns"
@@ -63,6 +62,7 @@ const ErrorMessage = ({ message, onRetry }) => (
     </Link>
   </div>
 )
+
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, classTitle, isLoading }) => {
   if (!isOpen) return null
@@ -165,6 +165,7 @@ const ClassDetailPage = () => {
     specialRequirements: "",
   })
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isFlyerModalOpen, setIsFlyerModalOpen] = useState(false);
 
   // --- Fetch Class ---
   const fetchClassData = useCallback(async () => {
@@ -175,7 +176,15 @@ const ClassDetailPage = () => {
     nprogress.start()
     try {
       const data = await getClassById(id)
-      setClassData(data)
+      
+      // Add null check before accessing imageUrl
+      if (data) {
+        console.log("Class data imageUrl:", data.imageUrl);
+        setClassData(data)
+      } else {
+        console.log("No class data returned from API");
+        setError("Class not found")
+      }
     } catch (err) {
       console.error("Fetch Class Error:", err)
       setError(err.response?.data?.message || "Failed to load class details. Please try again.")
@@ -218,24 +227,34 @@ const ClassDetailPage = () => {
   }, [classData])
 
   // --- Image Helpers ---
-  const getFullImageUrl = (partialUrl) => {
-    if (!partialUrl) return "/placeholder.svg"
-
+  const getFullImageUrl = (partialUrl, type = 'image') => {
+    if (!partialUrl) return "/placeholder.svg";
+  
     // If it's already a full URL, return it
-    if (partialUrl.startsWith("http")) return partialUrl
-
-    // Extract filename
-    const filename = partialUrl.split("/").pop()
-
+    if (partialUrl.startsWith("http")) return partialUrl;
+  
+    // Check if the path already contains the folder name
+    if (partialUrl.includes('partner-logos')) {
+      type = 'logo';
+    } else if (partialUrl.includes('class-images')) {
+      type = 'image';
+    }
+  
+    // Extract filename - get the last part of the path
+    const filename = partialUrl.split("/").pop();
+    
+    // Determine folder based on type
+    const folder = type === 'logo' ? 'partner-logos' : 'class-images';
+  
     // In development, always use the backend URL
     if (window.location.hostname === "localhost") {
-      const apiBaseUrl = import.meta.env.VITE_API_URL
-      return `${apiBaseUrl}/uploads/partner-logos/${filename}`
+      const apiBaseUrl = import.meta.env.VITE_API_URL;
+      return `${apiBaseUrl}/uploads/${folder}/${filename}`;
     }
-
-    // In production, use the relative path (will be handled by Vercel rewrites)
-    return `/uploads/partner-logos/${filename}`
-  }
+  
+    // In production, use the relative path
+    return `/uploads/${folder}/${filename}`;
+  };
 
   const handleImageError = (e) => {
     console.warn("Failed to load image:", e.target.src)
@@ -446,17 +465,7 @@ const ClassDetailPage = () => {
       >
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:16px_16px]"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
-        {classData.imageUrl && (
-          <div className="absolute inset-0 w-full h-full">
-            <img
-              src={getFullImageUrl(classData.imageUrl) || "/placeholder.svg"}
-              alt=""
-              className="w-full h-full object-cover opacity-20"
-              onError={handleImageError}
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-indigo-800/80 mix-blend-multiply" />
-          </div>
-        )}
+    
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 h-full flex items-center">
           <div className="flex flex-col items-center text-center w-full">
             <div className="space-y-4 max-w-3xl mx-auto">
@@ -474,23 +483,15 @@ const ClassDetailPage = () => {
             </div>
 
             {classData.partnerLogo && (
-              <div className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6">
-                <img
-                  src={getFullImageUrl(classData.partnerLogo) || "/placeholder.svg"}
-                  alt={`${classData.partnerName || "Partner"} Logo`}
-                  className="h-16 sm:h-20 object-contain"
-                  onError={(e) => {
-                    console.error("Failed to load image:", e.target.src)
-                    // Show partner name if image fails to load
-                    e.target.style.display = "none"
-                    e.target.insertAdjacentHTML(
-                      "afterend",
-                      `<span class="text-gray-500 font-medium">${classData.partnerName || "Partner"}</span>`,
-                    )
-                  }}
-                />
-              </div>
-            )}
+  <div className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6">
+    <img
+      src={getFullImageUrl(classData.partnerLogo, 'logo') || "/placeholder.svg"} // Add 'logo' here
+      alt={`${classData.partnerName || "Partner"} Logo`}
+      className="h-16 sm:h-20 object-contain"
+      onError={handleImageError}
+    />
+  </div>
+)}
           </div>
         </div>
       </div>
@@ -514,18 +515,27 @@ const ClassDetailPage = () => {
                 onClick={() => setActiveTab("schedule")}
                 icon={<FiCalendar className="h-4 w-4" />}
               >
-                Schedule
-              </TabButton>
-              {classData.instructor?.bio && (
-                <TabButton
-                  active={activeTab === "instructor"}
-                  onClick={() => setActiveTab("instructor")}
-                  icon={<FiUserCheck className="h-4 w-4" />}
-                >
-                  Instructor
-                </TabButton>
-              )}
-            </div>
+                      Schedule
+        </TabButton>
+        {classData.instructor?.bio && (
+          <TabButton
+            active={activeTab === "instructor"}
+            onClick={() => setActiveTab("instructor")}
+            icon={<FiUserCheck className="h-4 w-4" />}
+          >
+            Instructor
+          </TabButton>
+        )}
+        {classData.imageUrl && (
+          <TabButton
+            active={activeTab === "flyer"}
+            onClick={() => setActiveTab("flyer")}
+            icon={<FiImage className="h-4 w-4" />}
+          >
+            Flyer
+          </TabButton>
+        )}
+      </div>
 
             {/* Tab Content */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -593,8 +603,81 @@ const ClassDetailPage = () => {
                   </div>
                 </div>
               )}
+ 
+                       {/* Flyer Tab - UPDATED */}
+          {activeTab === "flyer" && classData.imageUrl && (
+            // Container - No padding here, image fills this area
+            <div className=""> 
+              {/* Image Container - Make it clickable */}
+              <div 
+                className="relative overflow-hidden cursor-pointer group" // Added cursor-pointer and group
+                onClick={() => setIsFlyerModalOpen(true)} // <-- THIS MAKES IT CLICKABLE
+              > 
+                <img
+                  src={getFullImageUrl(classData.imageUrl, 'image') || "/placeholder.svg"}
+                  alt={`${classData.title} flyer - Click to enlarge`} // Updated alt text
+                  // Image fills width, height adjusts, uses block display
+                  className="w-full h-auto block" 
+                  onError={(e) => {
+                    // --- Your existing error handling ---
+                    console.warn("Failed to load class flyer:", e.target.src);
+                    e.target.src = "/placeholder.svg";
+                    if (!e.target.dataset.fallbackAttempted) {
+                      const apiBaseUrl = import.meta.env.VITE_API_URL || "";
+                      const filename = classData.imageUrl?.split("/").pop();
+                      if (apiBaseUrl && filename) {
+                        e.target.src = `${apiBaseUrl}/uploads/class-images/${filename}`;
+                        e.target.dataset.fallbackAttempted = "true";
+                      } else {
+                        e.target.src = "/placeholder.svg";
+                      }
+                    } else {
+                      e.target.src = "/placeholder.svg";
+                    }
+                    // --- End error handling ---
+                  }}
+                />
+                {/* Optional: Add subtle overlay/icon on hover */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    {/* Make sure FiExternalLink is imported if you use this */}
+                    {/* <FiExternalLink className="text-white h-10 w-10" /> */} 
+                </div>
+              </div>
             </div>
+          )}
+          {/* End Flyer Tab */}
+            </div>
+            {/* --- Flyer Modal --- */}
+      {isFlyerModalOpen && classData.imageUrl && (
+        <div 
+          // Full screen overlay
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+          onClick={() => setIsFlyerModalOpen(false)} // Close on overlay click
+        >
+          {/* Modal Content (prevents close on image click) */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}> 
+            {/* Close Button */}
+            <button 
+              className="absolute -top-4 -right-4 sm:top-0 sm:-right-8 text-white bg-gray-800/50 hover:bg-gray-800 rounded-full p-2 z-10"
+              onClick={() => setIsFlyerModalOpen(false)}
+              aria-label="Close flyer view"
+            >
+              <FiX size={24} /> {/* Make sure FiX is imported */}
+            </button>
+            {/* Image inside Modal */}
+            <img 
+              src={getFullImageUrl(classData.imageUrl, 'image')} 
+              alt={`${classData.title} flyer - Full view`} 
+              // Style to fit within viewport
+              className="block max-w-[90vw] max-h-[90vh] object-contain rounded-md shadow-lg" 
+            />
           </div>
+        </div>
+      )}
+      {/* --- End Flyer Modal --- */}
+          </div>
+
+
 
           {/* Right Column */}
           <div className="mt-10 lg:mt-0">

@@ -58,6 +58,7 @@ const ClassesPage = () => {
   const [totalClassesCount, setTotalClassesCount] = useState(0)
   const [sortOption, setSortOption] = useState("date-asc")
   const [searchTerm, setSearchTerm] = useState("")
+  const [isFlyerModalOpen, setIsFlyerModalOpen] = useState(false);
 
   const [filters, setFilters] = useState(() => {
     return {
@@ -244,6 +245,36 @@ const ClassesPage = () => {
       return "Schedule TBD"
     }
   }
+
+// Helper to get full image URL
+const getFullImageUrl = (partialUrl, type = 'image') => {
+  if (!partialUrl) return "/placeholder.svg";
+
+  // If it's already a full URL, return it
+  if (partialUrl.startsWith("http")) return partialUrl;
+
+  // Check if the path already contains the folder name
+  if (partialUrl.includes('partner-logos')) {
+    type = 'logo';
+  } else if (partialUrl.includes('class-images')) {
+    type = 'image';
+  }
+
+  // Extract filename - get the last part of the path
+  const filename = partialUrl.split("/").pop();
+  
+  // Determine folder based on type
+  const folder = type === 'logo' ? 'partner-logos' : 'class-images';
+
+  // In development, always use the backend URL
+  if (window.location.hostname === "localhost") {
+    const apiBaseUrl = import.meta.env.VITE_API_URL;
+    return `${apiBaseUrl}/uploads/${folder}/${filename}`;
+  }
+
+  // In production, use the relative path
+  return `/uploads/${folder}/${filename}`;
+};
 
   // Helper to format times
   const formatTime = (timeStr) => {
@@ -488,34 +519,31 @@ const ClassesPage = () => {
           <Link
             to={`/classes/${classItem._id}`}
             state={{ city: selectedCity }}
-            className="relative h-48 bg-gray-100 overflow-hidden"
+            className="relative h-65 bg-gray-100 overflow-hidden"
           >
-            {classItem.imageUrl && (
-              <div 
-                className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-                style={{ backgroundImage: `url(${classItem.imageUrl})` }}
-              ></div>
-            )}
+              {classItem.imageUrl ? (
+    <img
+      src={getFullImageUrl(classItem.imageUrl, 'image')}
+      alt={classItem.title || "Class Image"}
+      className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+      onError={(e) => {
+        console.warn("Failed to load image:", e.target.src);
+        e.target.src = "/placeholder.svg";
+      }}
+    />
+  ) : (
+    <div 
+    className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+    style={{ backgroundImage: `url(/placeholder.svg)` }}
+  ></div>
+)}
             <div className="absolute top-3 right-3 flex flex-col gap-2">
               {getClassTypeBadge(classItem.type)}
               {getGenderBadge(classItem.targetGender)}
             </div>
           </Link>
 
-          <div className="p-5 flex flex-col flex-grow">
-            <Link
-              to={`/classes/${classItem._id}`}
-              state={{ city: selectedCity }}
-              className="block focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                {classItem.title || 'Untitled Class'}
-              </h3>
-            </Link>
-
-            <p className="text-sm text-gray-600 line-clamp-3 flex-grow mb-5 min-h-[60px]">
-            {(classItem.description || classItem.details || '').trim() || 'No description available'}
-            </p>
+          <div className="p-5 pt-4 flex flex-col flex-grow">
 
             <div className="mt-auto space-y-3 text-sm text-gray-700 border-t border-gray-100 pt-4">
               {/* Instructor */}
