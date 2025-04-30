@@ -200,6 +200,10 @@ const HomePage = () => {
 
         {/* Content container */}
         <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4 sm:px-6">
+          {/* Visibly hidden h1 for SEO */}
+<h1 className="sr-only">
+  Stand Strong – Empowering Jewish communities through self-defense and leadership
+</h1>
           {/* Logo with motion */}
           <motion.div variants={heroItemVariants(0)} initial="hidden" animate="visible">
             <img src={siteLogo || "/placeholder.svg"} alt="Stand Strong Logo" className="h-14 sm:h-16 md:h-20 w-auto" />
