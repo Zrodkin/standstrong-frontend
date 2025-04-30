@@ -12,9 +12,9 @@ import {
   FiChevronDown,
   FiChevronUp
 } from 'react-icons/fi';
-import { useAuth } from '../../context/AuthContext';
-import { getClassById } from '../../services/classService';
-import { getClassAttendance } from '../../services/attendanceService';
+import { useAuth } from "../../context/AuthContext.jsx";
+import { getClassById } from '/src/services/classService.js';
+import { getClassAttendance } from '/src/services/attendanceService.js';
 
 const AttendanceHistoryPage = () => {
   const { currentUser } = useAuth();

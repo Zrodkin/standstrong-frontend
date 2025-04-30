@@ -93,3 +93,15 @@ export const getUsers = async () => {
     const response = await api.get('/users');
     return response.data; // Assuming the API returns an array of user objects
 };
+
+// Get user profile data - add this to authService.js
+export const getUserProfile = async () => {
+    const response = await api.get('/users/profile');
+    
+    // Update stored user data if needed
+    if (response.data) {
+      localStorage.setItem('user', JSON.stringify(response.data));
+    }
+    
+    return response.data;
+  };

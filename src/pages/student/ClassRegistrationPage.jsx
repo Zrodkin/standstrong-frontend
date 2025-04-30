@@ -1,14 +1,16 @@
 // D:/StandStrong/frontend/src/pages/student/ClassRegistrationPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // Assuming path is correct
-import { getClassById, registerForClass } from '../../services/classService'; // Assuming path is correct
-import { format } from 'date-fns'; // For date formatting
-import { FiInfo, FiCheckCircle, FiXCircle, FiLogIn, FiLoader, FiArrowLeft, FiClock, FiMapPin, FiDollarSign, FiUsers } from 'react-icons/fi'; // Icons
+import { useAuth } from '../../context/AuthContext';
+import { getClassById } from '/src/services/classService.js'; // Keep if needed, use absolute path
+import { createRegistration } from '/src/services/registrationService.js';
+import { format } from 'date-fns';
+import { FiInfo, FiCheckCircle, FiXCircle, FiLogIn, FiLoader, FiArrowLeft, FiClock, FiMapPin, FiDollarSign, FiUsers } from 'react-icons/fi';
 
 const ClassRegistrationPage = () => {
-    const { classId } = useParams(); // Get classId from URL parameter
-    const { currentUser, isAuthenticated, /* refreshCurrentUser */ } = useAuth(); // Get user, auth status, and REFRESH function
+    const { classId } = useParams();
+    // Get all context values in one place
+    const { currentUser, isAuthenticated, refreshCurrentUser } = useAuth();
     const navigate = useNavigate();
 
     const [classDetails, setClassDetails] = useState(null);
@@ -16,25 +18,6 @@ const ClassRegistrationPage = () => {
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [registrationStatus, setRegistrationStatus] = useState('idle'); // 'idle', 'loading', 'alreadyRegistered', 'classFull', 'success', 'error', 'loginRequired'
-
-     // TODO: Add a function to AuthContext to refresh the user data
-     const refreshCurrentUser = async () => {
-       console.warn("AuthContext needs a 'refreshCurrentUser' function to update user state after registration.");
-       // Example implementation in AuthContext:
-       // const refreshCurrentUser = async () => {
-       //   try {
-       //     const profileData = await getUserProfile(); // Need getUserProfile in authService
-       //     setCurrentUser(profileData);
-       //   } catch (refreshError) {
-       //     console.error("Failed to refresh user data:", refreshError);
-       //     // Handle error appropriately, maybe logout if profile fetch fails
-       //   }
-       // };
-       // For now, we'll just simulate or ignore it
-       await new Promise(resolve => setTimeout(resolve, 100)); // Simulate delay
-     };
-     // --- End TODO ---
-
 
     // Fetch class details on component mount
     const fetchClassDetails = useCallback(async () => {
@@ -47,7 +30,7 @@ const ClassRegistrationPage = () => {
             // Determine initial registration status after fetching details
             if (!isAuthenticated) {
                 setRegistrationStatus('loginRequired');
-            } else if (data.registeredStudents?.some(reg => reg.student?._id === currentUser?._id)) { // Adjust check based on populate depth
+            } else if (data.registeredStudents?.some(reg => reg.student?._id === currentUser?._id)) {
                 setRegistrationStatus('alreadyRegistered');
             } else if (data.registeredStudents?.length >= data.capacity) {
                 setRegistrationStatus('classFull');
@@ -56,36 +39,59 @@ const ClassRegistrationPage = () => {
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to load class details.');
-            setRegistrationStatus('error'); // Error loading details
+            setRegistrationStatus('error');
         } finally {
             setLoading(false);
         }
-    }, [classId, isAuthenticated, currentUser]); // Dependencies
+    }, [classId, isAuthenticated, currentUser]);
 
     useEffect(() => {
         fetchClassDetails();
-    }, [fetchClassDetails]); // Run effect when fetch function changes (due to deps)
-
+    }, [fetchClassDetails]);
 
     const handleRegistration = async () => {
-        if (registrationStatus !== 'idle' || isSubmitting) return; // Only proceed if eligible and not already submitting
-
+        if (registrationStatus !== 'idle' || isSubmitting) return;
+    
         setIsSubmitting(true);
         setError('');
         try {
-            await registerForClass(classId);
-            setRegistrationStatus('success');
-            // IMPORTANT: Refresh user data in context so currentUser.registeredClasses updates
-            await refreshCurrentUser();
-            // Optional: Navigate away after success, maybe to dashboard?
-            // setTimeout(() => navigate('/dashboard'), 2000); // Example redirect after 2s
+          console.log("Starting registration for class:", classId);
+    
+          // --- CHANGE THIS LINE ---
+          // const response = await registerForClass(classId); // OLD FUNCTION CALL
+          const response = await createRegistration(classId); // NEW FUNCTION CALL
+          // --- END CHANGE ---
+    
+          console.log("Registration response:", response); // Response from createRegistration
+    
+          // --- DELETE THIS BLOCK ---
+          // // Manually update localStorage
+          // const userData = JSON.parse(localStorage.getItem('user')) || {};
+          // if (!userData.registeredClasses) {
+          //   userData.registeredClasses = [];
+          // }
+          // if (!userData.registeredClasses.includes(classId)) {
+          //   userData.registeredClasses.push(classId);
+          //   localStorage.setItem('user', JSON.stringify(userData));
+          //   console.log("Updated localStorage with new class ID");
+          // }
+          // --- END DELETE ---
+    
+          setRegistrationStatus('success');
+    
+          // Optional: Refresh user's registration list if needed for UI updates elsewhere
+          // Example: If you have a fetchUserRegistrations function available:
+          // fetchUserRegistrations();
+    
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed. Please try again.');
-            setRegistrationStatus('error'); // Set status to error on failed registration
+          console.error("Registration error:", err);
+          setError(err.response?.data?.message || 'Registration failed. Please try again.');
+          setRegistrationStatus('error');
         } finally {
-            setIsSubmitting(false);
+          setIsSubmitting(false);
         }
-    };
+      };
+
 
     // Helper to format schedule (basic example)
     const formatSchedule = (schedule) => {

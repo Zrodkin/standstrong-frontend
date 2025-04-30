@@ -31,12 +31,6 @@ export const deleteClass = async (id) => {
   return response.data;
 };
 
-// Register for a class
-export const registerForClass = async (classId) => {
-  const response = await api.post(`/classes/${classId}/register`);
-  return response.data;
-};
-
 // Get all cities with classes
 export const getAllCities = async () => {
   const response = await api.get('/classes/cities');
@@ -47,4 +41,18 @@ export const getAllCities = async () => {
 export const getClassesByCity = async (city) => {
   const response = await api.get(`/classes/cities/${city}`);
   return response.data;
+};
+
+export const getClassesByCityName = async (cityName) => {
+  try {
+    // Encode the city name to handle spaces or special characters in the URL path
+    const encodedCityName = encodeURIComponent(cityName);
+    // Uses the GET /api/classes/cities/:city endpoint
+    const response = await api.get(`/classes/cities/${encodedCityName}`);
+    return response.data; // response.data will contain the array of classes
+  } catch (error) {
+    console.error(`Error fetching classes for city ${cityName}:`, error);
+    // Rethrow the error so the component can catch it
+    throw error;
+  }
 };
