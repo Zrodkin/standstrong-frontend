@@ -31,13 +31,13 @@ import {
   FiZap,
   FiChevronRight,
   FiCalendar,
-  FiStar,
   FiArrowRight,
   FiCheck,
   FiPlay,
   FiMessageCircle,
-  FiClock,
 } from "react-icons/fi"
+
+import { FaStarOfDavid } from "react-icons/fa"
 
 import { useClasses } from "../context/ClassContext"
 import getFullImageUrl from "../utils/getFullImageUrl"
@@ -114,7 +114,7 @@ const testimonials = [
 // Stats data
 const stats = [
   { value: "10K+", label: "Students Trained" },
-  { value: "5+", label: "Cities Nationwide" },
+  { value: "100+", label: "Classes Nationwide" },
   { value: "95%", label: "Student Satisfaction" },
   { value: "100%", label: "Confidence Boost" },
 ]
@@ -285,7 +285,13 @@ const HomePage = () => {
       </section>
 
       {/* === Stats Section (NEW) === */}
-      <section className="py-16 bg-gradient-to-r from-[#0D47A1] to-[#1565C0] text-white">
+      <section
+        className="py-16 text-white" // Removed the pb-24
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(21, 111, 176, 1) 0%, rgba(97, 174, 199, 1) 30%, rgba(97, 174, 199, 1) 70%, rgba(21, 111, 176, 1) 100%)",
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12"
@@ -317,15 +323,18 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* === Why Stand Strong Section with Interactive Cards === */}
-      <section className="py-20 bg-white relative overflow-hidden">
+      {/* Minimal transition space */}
+      <div className="h-2 bg-[#E3F2FD]"></div>
+
+      {/* === Why Stand Strong Section with Tabs === */}
+      <section className="py-16 md:py-20 bg-gradient-to-b from-[#E3F2FD] to-white relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div
             className="absolute inset-0"
             style={{
               backgroundImage: "radial-gradient(#0D47A1 1px, transparent 1px)",
-              backgroundSize: "30px 30px",
+              backgroundSize: "20px 20px",
             }}
           ></div>
         </div>
@@ -333,60 +342,45 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Section Headings */}
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="inline-block px-4 py-1.5 bg-[#64B5F6]/20 text-[#0D47A1] text-sm font-semibold rounded-full mb-4">
-              WHY CHOOSE US
+            <span className="inline-block px-3 py-1 bg-[#64B5F6]/10 text-[#0D47A1] text-sm font-semibold rounded-full mb-3">
+              WHY STAND STRONG
             </span>
-            <h2 className="text-3xl md:text-5xl font-['Poppins'] font-bold text-[#0D47A1] tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-['Poppins'] font-bold text-[#0D47A1]">
               Empowerment Through Skill
             </h2>
-            <div className="w-24 h-1 bg-[#D72638] mx-auto mt-6 mb-6 rounded-full"></div>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
               Discover our mission and the story behind Stand Strong.
             </p>
           </motion.div>
 
           {/* Toggle Buttons */}
-          <div className="flex justify-center mb-12">
-            <div className="inline-flex p-1.5 bg-gray-100 rounded-xl">
-              <button
-                onClick={() => setActiveTab("about")}
-                className={`relative px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                  activeTab === "about" ? "text-white" : "text-gray-600 hover:text-[#0D47A1]"
-                }`}
-              >
-                {activeTab === "about" && (
-                  <motion.div
-                    layoutId="activeTabBackground"
-                    className="absolute inset-0 bg-[#0D47A1] rounded-lg"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">About Us</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("story")}
-                className={`relative px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                  activeTab === "story" ? "text-white" : "text-gray-600 hover:text-[#0D47A1]"
-                }`}
-              >
-                {activeTab === "story" && (
-                  <motion.div
-                    layoutId="activeTabBackground"
-                    className="absolute inset-0 bg-[#0D47A1] rounded-lg"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">Our Story</span>
-              </button>
-            </div>
+          <div className="flex justify-center space-x-4 mb-10">
+            <button
+              onClick={() => setActiveTab("about")}
+              className={`px-6 py-3 rounded-lg font-['Poppins'] font-semibold transition-all duration-300 text-base ${
+                activeTab === "about"
+                  ? "bg-[#0D47A1] text-white shadow-lg"
+                  : "bg-white text-[#0D47A1] hover:bg-[#64B5F6]/10"
+              }`}
+            >
+              About Us
+            </button>
+            <button
+              onClick={() => setActiveTab("story")}
+              className={`px-6 py-3 rounded-lg font-['Poppins'] font-semibold transition-all duration-300 text-base ${
+                activeTab === "story"
+                  ? "bg-[#0D47A1] text-white shadow-lg"
+                  : "bg-white text-[#0D47A1] hover:bg-[#64B5F6]/10"
+              }`}
+            >
+              Our Story
+            </button>
           </div>
 
           {/* Dynamic Content Area */}
@@ -401,25 +395,29 @@ const HomePage = () => {
                   transition={{ duration: 0.5 }}
                 >
                   {/* "About Us" Content Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                     {aboutFeatures.map((feature, index) => (
                       <motion.div
                         key={index}
-                        className="bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                        whileHover={{ y: -8 }}
+                        className="bg-white shadow-lg p-6 rounded-xl text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-[#64B5F6]/10"
+                        whileHover={{
+                          y: -10,
+                          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                        }}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.4, delay: index * 0.1 }}
                       >
-                        <div className="h-2 bg-[#0D47A1]"></div>
-                        <div className="p-6">
-                          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#64B5F6]/20 text-[#0D47A1] mb-5">
-                            <feature.Icon className="h-7 w-7" />
-                          </div>
-                          <h4 className="font-['Poppins'] font-bold text-xl text-gray-800 mb-3">{feature.title}</h4>
-                          <p className="text-gray-600">{feature.text}</p>
-                        </div>
+                        <motion.div
+                          className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#64B5F6]/10 text-[#0D47A1] mb-4"
+                          whileHover={{ scale: 1.1, rotate: 5 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <feature.Icon className="h-8 w-8" />
+                        </motion.div>
+                        <h4 className="font-['Poppins'] font-bold text-lg text-[#0D47A1]">{feature.title}</h4>
+                        <p className="text-gray-600 mt-2">{feature.text}</p>
                       </motion.div>
                     ))}
                   </div>
@@ -435,25 +433,10 @@ const HomePage = () => {
                   transition={{ duration: 0.5 }}
                 >
                   <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
-                    {/* Left Column - Image */}
-                    <motion.div
-                      className="lg:col-span-2 rounded-2xl overflow-hidden shadow-xl"
-                      initial={{ opacity: 0, x: -30 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <img
-                        src={actionShot1 || "/placeholder.svg"}
-                        alt="Stand Strong Class"
-                        className="w-full h-full object-cover"
-                      />
-                    </motion.div>
-
-                    {/* Right Column - Story Content */}
+                    {/* Left Column - Story Content */}
                     <motion.div
                       className="lg:col-span-3 bg-white p-8 rounded-2xl shadow-lg border border-gray-100"
-                      initial={{ opacity: 0, x: 30 }}
+                      initial={{ opacity: 0, x: -30 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: 0.2 }}
@@ -471,7 +454,7 @@ const HomePage = () => {
                           viewport={{ once: true }}
                           transition={{ delay: index * 0.1 + 0.3 }}
                         >
-                          <div className="mt-1.5 mr-3 flex-shrink-0">
+                          <div className="mt-2.5 mr-3 flex-shrink-0">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#D72638]"></div>
                           </div>
                           <p className="text-gray-600 leading-relaxed">{para}</p>
@@ -493,6 +476,21 @@ const HomePage = () => {
                           <FiArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                       </motion.div>
+                    </motion.div>
+
+                    {/* Right Column - Image */}
+                    <motion.div
+                      className="lg:col-span-2 rounded-2xl overflow-hidden shadow-xl"
+                      initial={{ opacity: 0, x: 30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <img
+                        src={actionShot1 || "/placeholder.svg"}
+                        alt="Stand Strong Class"
+                        className="w-full h-full object-cover"
+                      />
                     </motion.div>
                   </div>
                 </motion.div>
@@ -630,7 +628,7 @@ const HomePage = () => {
                       />
                     </div>
                     <div className="absolute -bottom-1 -right-1 bg-[#0D47A1] text-white p-1 rounded-full">
-                      <FiStar className="h-3 w-3" />
+                      <FaStarOfDavid className="h-3 w-3" />
                     </div>
                   </div>
                   <div className="ml-4">
@@ -759,25 +757,6 @@ const HomePage = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-
-                {/* Floating Card */}
-                <motion.div
-                  className="absolute -bottom-8 -right-8 bg-white rounded-xl p-4 shadow-xl max-w-xs"
-                  initial={{ y: 20, opacity: 0 }}
-                  whileInView={{ y: 0, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <div className="flex items-center">
-                    <div className="p-2 bg-[#64B5F6]/20 rounded-full mr-3">
-                      <FiClock className="h-5 w-5 text-[#0D47A1]" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-800">Classes Starting Soon</h4>
-                      <p className="text-sm text-gray-500">Don't miss out on our upcoming sessions</p>
-                    </div>
-                  </div>
-                </motion.div>
               </div>
             </motion.div>
           </div>
