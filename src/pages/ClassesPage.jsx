@@ -58,7 +58,7 @@ const ClassesPage = () => {
   const [totalClassesCount, setTotalClassesCount] = useState(0)
   const [sortOption, setSortOption] = useState("date-asc")
   const [searchTerm, setSearchTerm] = useState("")
-  const [isFlyerModalOpen, setIsFlyerModalOpen] = useState(false);
+
 
   const [filters, setFilters] = useState(() => {
     return {
@@ -519,7 +519,7 @@ const getFullImageUrl = (partialUrl, type = 'image') => {
           <Link
             to={`/classes/${classItem._id}`}
             state={{ city: selectedCity }}
-            className="relative h-65 bg-gray-100 overflow-hidden"
+            className="relative aspect-video bg-gray-100 overflow-hidden"
           >
               {classItem.imageUrl ? (
     <img
@@ -533,7 +533,7 @@ const getFullImageUrl = (partialUrl, type = 'image') => {
     />
   ) : (
     <div 
-    className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+    className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105" 
     style={{ backgroundImage: `url(/placeholder.svg)` }}
   ></div>
 )}
@@ -545,7 +545,7 @@ const getFullImageUrl = (partialUrl, type = 'image') => {
 
           <div className="p-5 pt-4 flex flex-col flex-grow">
 
-            <div className="mt-auto space-y-3 text-sm text-gray-700 border-t border-gray-100 pt-4">
+            <div className="mt-auto space-y-3 text-sm text-gray-700 border-t border-gray-100 pt-2">
               {/* Instructor */}
               <div className="flex items-center">
                 <div className="bg-blue-50 p-1.5 rounded-full mr-3">
