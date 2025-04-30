@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useRef, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
@@ -28,10 +30,13 @@ import {
   FiAward,
   FiZap,
   FiChevronRight,
-  FiMapPin,
   FiCalendar,
-  FiHeart,
   FiStar,
+  FiArrowRight,
+  FiCheck,
+  FiPlay,
+  FiMessageCircle,
+  FiClock,
 } from "react-icons/fi"
 
 import { useClasses } from "../context/ClassContext"
@@ -88,19 +93,30 @@ const testimonials = [
       "Stand Strong gave me the confidence to walk through life without fear. The skills I learned are practical and empowering.",
     name: "Sarah M.",
     role: "Program Graduate",
+    avatar: "/diverse-group.png",
   },
   {
     quote:
       "As a parent, I've seen my teenager transform through these classes. They stand taller and more confidently now.",
     name: "David K.",
     role: "Parent",
+    avatar: "/diverse-group.png",
   },
   {
     quote:
       "The instructors create a supportive environment where everyone can learn at their own pace. Truly exceptional.",
     name: "Michael R.",
     role: "Community Leader",
+    avatar: "/diverse-group.png",
   },
+]
+
+// Stats data
+const stats = [
+  { value: "10K+", label: "Students Trained" },
+  { value: "5+", label: "Cities Nationwide" },
+  { value: "95%", label: "Student Satisfaction" },
+  { value: "100%", label: "Confidence Boost" },
 ]
 
 const HomePage = () => {
@@ -164,129 +180,152 @@ const HomePage = () => {
 
   const { cities } = useClasses()
 
-  
-return (
-  <div>
-    {/* === Hero Section === */}
-    <section className="relative h-[70vh] sm:h-[65vh] md:h-[70vh]">
-      {/* Background Image - Fixed centering for all devices */}
-      <div className="absolute inset-0 overflow-hidden">
-        <img
-          src={heroBackgroundImage}
-          alt="Stand Strong Hero"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-          loading="eager"
-          fetchPriority="high"
-        />
-      </div>
-      
-      {/* Darker overlay */}
-      <div className="absolute inset-0 bg-black/60"></div>
-      
-      {/* Content container */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4 sm:px-6">
-        {/* Logo with motion */}
-        <motion.div variants={heroItemVariants(0)} initial="hidden" animate="visible">
-          <img 
-            src={siteLogo} 
-            alt="Stand Strong Logo" 
-            className="h-14 sm:h-16 md:h-20 w-auto" 
+  return (
+    <div>
+      {/* === Hero Section === */}
+      <section className="relative h-[70vh] sm:h-[65vh] md:h-[70vh]">
+        {/* Background Image - Fixed centering for all devices */}
+        <div className="absolute inset-0 overflow-hidden">
+          <img
+            src={heroBackgroundImage || "/placeholder.svg"}
+            alt="Stand Strong Hero"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            loading="eager"
+            fetchPriority="high"
           />
-        </motion.div>
-        
-        {/* Text */}
-        <motion.p
-          className="mt-2 sm:mt-4 text-lg sm:text-xl md:text-2xl max-w-xl sm:max-w-2xl"
-          variants={heroItemVariants(0.2)}
-          initial="hidden"
-          animate="visible"
-        >
-          Empowering through self-defense classes in your city
-        </motion.p>
-        
-        {/* Button with larger bottom margin */}
-        <motion.div
-          variants={heroItemVariants(0.4)}
-          initial="hidden"
-          animate="visible"
-          className="mt-8 md:mt-14"
-        >
-          <button
-            onClick={scrollToCities}
-            className="px-8 py-3 sm:px-10 sm:py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-base sm:text-lg shadow-md hover:shadow-lg"
+        </div>
+
+        {/* Darker overlay */}
+        <div className="absolute inset-0 bg-black/60"></div>
+
+        {/* Content container */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4 sm:px-6">
+          {/* Logo with motion */}
+          <motion.div variants={heroItemVariants(0)} initial="hidden" animate="visible">
+            <img src={siteLogo || "/placeholder.svg"} alt="Stand Strong Logo" className="h-14 sm:h-16 md:h-20 w-auto" />
+          </motion.div>
+
+          {/* Text */}
+          <motion.p
+            className="mt-2 sm:mt-4 text-lg sm:text-xl md:text-2xl max-w-xl sm:max-w-2xl"
+            variants={heroItemVariants(0.2)}
+            initial="hidden"
+            animate="visible"
           >
-            Find Classes
-          </button>
-        </motion.div>
-      </div>
-    </section>
+            Empowering through self-defense classes in your city
+          </motion.p>
 
+          {/* Button with larger bottom margin */}
+          <motion.div variants={heroItemVariants(0.4)} initial="hidden" animate="visible" className="mt-8 md:mt-14">
+            <button
+              onClick={scrollToCities}
+              className="px-8 py-3 sm:px-10 sm:py-3.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-200 transition-colors duration-300 text-base sm:text-lg shadow-md hover:shadow-lg"
+            >
+              Find Classes
+            </button>
+          </motion.div>
+        </div>
+      </section>
 
+      {/* === Cities Grid with Enhanced Mobile Responsiveness === */}
+      <section id="cities-section" className="py-8 sm:py-12 md:py-16 bg-gray-50" ref={citiesSectionRef}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">Find Us In Your City</h2>
+              <p className="mt-2 sm:mt-3 max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-gray-500">
+                Select your location to see available classes.
+              </p>
+            </motion.div>
+          </div>
 
-{/* === Cities Grid with Enhanced Mobile Responsiveness === */}
-<section id="cities-section" className="py-8 sm:py-12 md:py-16 bg-gray-50" ref={citiesSectionRef}>
-  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="text-center mb-8 sm:mb-10 md:mb-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">Find Us In Your City</h2>
-        <p className="mt-2 sm:mt-3 max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-gray-500">
-          Select your location to see available classes.
-        </p>
-      </motion.div>
-    </div>
-    
-    <motion.div 
-      className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 text-center" 
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 1 }}
-    >
-      {cities.map((city) => (
-        <motion.div 
-          key={city._id} 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 * cities.indexOf(city) }}
-          className="mb-2 sm:mb-0"
-        >
-          <Link to={`/classes?city=${city.name}`} className="block group">
-            <div className="overflow-hidden rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <img
-                src={getFullImageUrl(city.imageUrl) || cityImageMap[city.name] || defaultCityImage}
-                alt={`${city.name} skyline`}
-                className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="eager"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = defaultCityImage;
-                }}
-              />
-            </div>
-            <p className="mt-1 sm:mt-2 font-semibold text-sm sm:text-base md:text-lg text-gray-900">{city.name}</p>
-            <div className="flex items-center justify-center mt-0.5 sm:mt-1">
-              <span className="text-xs text-indigo-600 font-medium mr-1">Classes</span>
-              <FiChevronRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-indigo-600 group-hover:translate-x-1 transition-transform duration-300" />
-            </div>
-          </Link>
-        </motion.div>
-      ))}
-    </motion.div>
-  </div>
-</section>
+          <motion.div
+            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 text-center"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+          >
+            {cities.map((city) => (
+              <motion.div
+                key={city._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 * cities.indexOf(city) }}
+                className="mb-2 sm:mb-0"
+              >
+                <Link to={`/classes?city=${city.name}`} className="block group">
+                  <div className="overflow-hidden rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <img
+                      src={getFullImageUrl(city.imageUrl) || cityImageMap[city.name] || defaultCityImage}
+                      alt={`${city.name} skyline`}
+                      className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="eager"
+                      onError={(e) => {
+                        e.target.onerror = null
+                        e.target.src = defaultCityImage
+                      }}
+                    />
+                  </div>
+                  <p className="mt-1 sm:mt-2 font-semibold text-sm sm:text-base md:text-lg text-gray-900">
+                    {city.name}
+                  </p>
+                  <div className="flex items-center justify-center mt-0.5 sm:mt-1">
+                    <span className="text-xs text-indigo-600 font-medium mr-1">Classes</span>
+                    <FiChevronRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-indigo-600 group-hover:translate-x-1 transition-transform duration-300" />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
 
-      {/* === Why Stand Strong Section with Tabs === */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-[#E3F2FD] to-white relative overflow-hidden">
+      {/* === Stats Section (NEW) === */}
+      <section className="py-16 bg-gradient-to-r from-[#0D47A1] to-[#1565C0] text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+          >
+            {stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                className="text-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <motion.div
+                  className="text-4xl md:text-5xl font-bold mb-2"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  {stat.value}
+                </motion.div>
+                <p className="text-blue-100 font-medium">{stat.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* === Why Stand Strong Section with Interactive Cards === */}
+      <section className="py-20 bg-white relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div
             className="absolute inset-0"
             style={{
               backgroundImage: "radial-gradient(#0D47A1 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
+              backgroundSize: "30px 30px",
             }}
           ></div>
         </div>
@@ -294,100 +333,168 @@ return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Section Headings */}
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="inline-block px-3 py-1 bg-[#64B5F6]/10 text-[#0D47A1] text-sm font-semibold rounded-full mb-3">
-              WHY STAND STRONG
+            <span className="inline-block px-4 py-1.5 bg-[#64B5F6]/20 text-[#0D47A1] text-sm font-semibold rounded-full mb-4">
+              WHY CHOOSE US
             </span>
-            <h2 className="text-3xl md:text-4xl font-['Poppins'] font-bold text-[#0D47A1]">
+            <h2 className="text-3xl md:text-5xl font-['Poppins'] font-bold text-[#0D47A1] tracking-tight">
               Empowerment Through Skill
             </h2>
+            <div className="w-24 h-1 bg-[#D72638] mx-auto mt-6 mb-6 rounded-full"></div>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
               Discover our mission and the story behind Stand Strong.
             </p>
           </motion.div>
 
           {/* Toggle Buttons */}
-          <div className="flex justify-center space-x-4 mb-10">
-            <button
-              onClick={() => setActiveTab("about")}
-              className={`px-6 py-3 rounded-lg font-['Poppins'] font-semibold transition-all duration-300 text-base ${
-                activeTab === "about"
-                  ? "bg-[#0D47A1] text-white shadow-lg"
-                  : "bg-white text-[#0D47A1] hover:bg-[#64B5F6]/10"
-              }`}
-            >
-              About Us
-            </button>
-            <button
-              onClick={() => setActiveTab("story")}
-              className={`px-6 py-3 rounded-lg font-['Poppins'] font-semibold transition-all duration-300 text-base ${
-                activeTab === "story"
-                  ? "bg-[#0D47A1] text-white shadow-lg"
-                  : "bg-white text-[#0D47A1] hover:bg-[#64B5F6]/10"
-              }`}
-            >
-              Our Story
-            </button>
+          <div className="flex justify-center mb-12">
+            <div className="inline-flex p-1.5 bg-gray-100 rounded-xl">
+              <button
+                onClick={() => setActiveTab("about")}
+                className={`relative px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  activeTab === "about" ? "text-white" : "text-gray-600 hover:text-[#0D47A1]"
+                }`}
+              >
+                {activeTab === "about" && (
+                  <motion.div
+                    layoutId="activeTabBackground"
+                    className="absolute inset-0 bg-[#0D47A1] rounded-lg"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">About Us</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("story")}
+                className={`relative px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  activeTab === "story" ? "text-white" : "text-gray-600 hover:text-[#0D47A1]"
+                }`}
+              >
+                {activeTab === "story" && (
+                  <motion.div
+                    layoutId="activeTabBackground"
+                    className="absolute inset-0 bg-[#0D47A1] rounded-lg"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">Our Story</span>
+              </button>
+            </div>
           </div>
 
           {/* Dynamic Content Area */}
           <div className="mt-8">
             <AnimatePresence mode="wait">
               {activeTab === "about" && (
-                <motion.div key="about" variants={tabContentVariants} initial="hidden" animate="visible" exit="exit">
+                <motion.div
+                  key="about"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
+                >
                   {/* "About Us" Content Grid */}
-                  <motion.div
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {aboutFeatures.map((feature, index) => (
                       <motion.div
                         key={index}
-                        className="bg-white shadow-lg p-6 rounded-xl text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-[#64B5F6]/10"
-                        variants={itemVariants}
+                        className="bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                        whileHover={{ y: -8 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: index * 0.1 }}
                       >
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#64B5F6]/10 text-[#0D47A1] mb-4">
-                          <feature.Icon className="h-8 w-8" />
+                        <div className="h-2 bg-[#0D47A1]"></div>
+                        <div className="p-6">
+                          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#64B5F6]/20 text-[#0D47A1] mb-5">
+                            <feature.Icon className="h-7 w-7" />
+                          </div>
+                          <h4 className="font-['Poppins'] font-bold text-xl text-gray-800 mb-3">{feature.title}</h4>
+                          <p className="text-gray-600">{feature.text}</p>
                         </div>
-                        <h4 className="font-['Poppins'] font-bold text-lg text-[#0D47A1]">{feature.title}</h4>
-                        <p className="text-gray-600 mt-2">{feature.text}</p>
                       </motion.div>
                     ))}
-                  </motion.div>
+                  </div>
                 </motion.div>
               )}
 
               {activeTab === "story" && (
                 <motion.div
                   key="story"
-                  variants={tabContentVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
                 >
-                  {/* "Our Story" Content */}
-                  <h3 className="text-2xl font-['Poppins'] font-bold text-center text-[#0D47A1] mb-6">
-                    {ourStoryContent.title}
-                  </h3>
-                  {ourStoryContent.paragraphs.map((para, index) => (
-                    <motion.p
-                      key={index}
-                      className="mb-4 text-gray-600 leading-relaxed"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 + 0.2 }}
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                    {/* Left Column - Image */}
+                    <motion.div
+                      className="lg:col-span-2 rounded-2xl overflow-hidden shadow-xl"
+                      initial={{ opacity: 0, x: -30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6 }}
                     >
-                      {para}
-                    </motion.p>
-                  ))}
+                      <img
+                        src={actionShot1 || "/placeholder.svg"}
+                        alt="Stand Strong Class"
+                        className="w-full h-full object-cover"
+                      />
+                    </motion.div>
+
+                    {/* Right Column - Story Content */}
+                    <motion.div
+                      className="lg:col-span-3 bg-white p-8 rounded-2xl shadow-lg border border-gray-100"
+                      initial={{ opacity: 0, x: 30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                      <h3 className="text-2xl md:text-3xl font-['Poppins'] font-bold text-[#0D47A1] mb-6">
+                        {ourStoryContent.title}
+                      </h3>
+
+                      {ourStoryContent.paragraphs.map((para, index) => (
+                        <motion.div
+                          key={index}
+                          className="mb-4 flex items-start"
+                          initial={{ opacity: 0, y: 10 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.1 + 0.3 }}
+                        >
+                          <div className="mt-1.5 mr-3 flex-shrink-0">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#D72638]"></div>
+                          </div>
+                          <p className="text-gray-600 leading-relaxed">{para}</p>
+                        </motion.div>
+                      ))}
+
+                      <motion.div
+                        className="mt-8"
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.7 }}
+                      >
+                        <Link
+                          to="/about"
+                          className="inline-flex items-center text-[#0D47A1] font-medium hover:text-[#1565C0] transition-colors"
+                        >
+                          Learn more about our mission
+                          <FiArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                      </motion.div>
+                    </motion.div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -395,151 +502,285 @@ return (
         </div>
       </section>
 
-      {/* === Testimonials Section === */}
-      <section className="py-16 md:py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* === Gallery Section (REDESIGNED) === */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="inline-block px-3 py-1 bg-[#D72638]/10 text-[#D72638] text-sm font-semibold rounded-full mb-3">
+            <span className="inline-block px-4 py-1.5 bg-[#D72638]/10 text-[#D72638] text-sm font-semibold rounded-full mb-4">
+              OUR CLASSES
+            </span>
+            <h2 className="text-3xl md:text-5xl font-['Poppins'] font-bold text-[#0D47A1] tracking-tight">
+              See Us in Action
+            </h2>
+            <div className="w-24 h-1 bg-[#D72638] mx-auto mt-6 mb-6 rounded-full"></div>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+              Experience the energy and focus of our self-defense training sessions.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {galleryImages.map((imgSrc, index) => (
+              <motion.div
+                key={index}
+                className="group relative rounded-2xl overflow-hidden shadow-lg h-80"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+                whileHover={{ y: -5 }}
+              >
+                <img
+                  src={imgSrc || "/placeholder.svg"}
+                  alt={`Class action shot ${index + 1}`}
+                  className="object-cover h-full w-full transform group-hover:scale-105 transition-transform duration-700"
+                />
+
+                {/* Overlay with play button */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                  <motion.div
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-4 cursor-pointer"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FiPlay className="h-8 w-8 text-white" />
+                  </motion.div>
+
+                  <h4 className="text-white font-bold text-xl mb-1">Stand Strong in Action</h4>
+                  <p className="text-gray-200 text-sm">Building confidence through practice</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            className="mt-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <Link
+              to="/classes"
+              className="inline-flex items-center px-6 py-3 bg-[#0D47A1] text-white font-medium rounded-lg hover:bg-[#1565C0] transition-colors shadow-md hover:shadow-lg"
+            >
+              <FiCalendar className="mr-2 h-5 w-5" />
+              View All Classes
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* === Testimonials Section (REDESIGNED) === */}
+      <section className="py-20 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "radial-gradient(#0D47A1 1px, transparent 1px)",
+              backgroundSize: "30px 30px",
+            }}
+          ></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="inline-block px-4 py-1.5 bg-[#D72638]/10 text-[#D72638] text-sm font-semibold rounded-full mb-4">
               TESTIMONIALS
             </span>
-            <h2 className="text-3xl md:text-4xl font-['Poppins'] font-bold text-[#0D47A1]">
+            <h2 className="text-3xl md:text-5xl font-['Poppins'] font-bold text-[#0D47A1] tracking-tight">
               Real People. Real Strength.
             </h2>
+            <div className="w-24 h-1 bg-[#D72638] mx-auto mt-6 mb-6 rounded-full"></div>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
               See how Stand Strong has helped communities nationwide.
             </p>
           </motion.div>
 
-          {/* Testimonial Carousel */}
-          <div className="relative max-w-3xl mx-auto mb-16">
-            <AnimatePresence mode="wait">
-              {testimonials.map(
-                (testimonial, index) =>
-                  activeTestimonial === index && (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.5 }}
-                      className="bg-white p-8 rounded-xl shadow-lg border border-[#64B5F6]/20 text-center"
-                    >
-                      <div className="mb-6">
-                        <FiStar className="inline-block text-[#D72638] h-8 w-8" />
-                      </div>
-                      <p className="text-xl italic text-gray-700 mb-6">"{testimonial.quote}"</p>
-                      <div>
-                        <p className="font-['Poppins'] font-semibold text-[#0D47A1]">{testimonial.name}</p>
-                        <p className="text-sm text-gray-500">{testimonial.role}</p>
-                      </div>
-                    </motion.div>
-                  ),
-              )}
-            </AnimatePresence>
-
-            {/* Testimonial Navigation Dots */}
-            <div className="flex justify-center space-x-2 mt-6">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    activeTestimonial === index ? "bg-[#0D47A1] w-6" : "bg-[#64B5F6]/30"
-                  }`}
-                  aria-label={`View testimonial ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Gallery Section */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-          >
-            {galleryImages.map((imgSrc, index) => (
+          {/* Testimonial Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
               <motion.div
                 key={index}
-                className="overflow-hidden rounded-xl shadow-lg relative group"
-                variants={itemVariants}
+                className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                whileHover={{ y: -8 }}
               >
-                <img
-                  src={imgSrc || "/placeholder.svg"}
-                  alt={`Class action shot ${index + 1}`}
-                  className="object-cover h-64 w-full transform group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0D47A1]/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                  <div className="p-4 text-white">
-                    <p className="font-['Poppins'] font-semibold">Stand Strong in Action</p>
-                    <p className="text-sm">Building confidence through practice</p>
+                <div className="flex items-center mb-6">
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#64B5F6]">
+                      <img
+                        src={testimonial.avatar || "/placeholder.svg"}
+                        alt={testimonial.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 bg-[#0D47A1] text-white p-1 rounded-full">
+                      <FiStar className="h-3 w-3" />
+                    </div>
                   </div>
+                  <div className="ml-4">
+                    <h4 className="font-['Poppins'] font-bold text-gray-800">{testimonial.name}</h4>
+                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <FiMessageCircle className="text-[#D72638] h-6 w-6 mb-2" />
+                  <p className="text-gray-600 italic">"{testimonial.quote}"</p>
                 </div>
               </motion.div>
             ))}
+          </div>
+
+          <motion.div
+            className="mt-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <Link
+              to="/testimonials"
+              className="inline-flex items-center text-[#0D47A1] font-medium hover:text-[#1565C0] transition-colors"
+            >
+              Read more success stories
+              <FiArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* === Call to Action Banner === */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-white to-[#E3F2FD]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
-            className="bg-gradient-to-r from-[#0D47A1] to-[#1565C0] text-white rounded-2xl shadow-xl p-10 md:p-12 text-center relative overflow-hidden"
-          >
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: "radial-gradient(white 1px, transparent 1px)",
-                  backgroundSize: "20px 20px",
-                }}
-              ></div>
-            </div>
+      {/* === Call to Action Banner (REDESIGNED) === */}
+      <section className="py-20 bg-gradient-to-r from-[#0D47A1] to-[#1565C0] relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "radial-gradient(white 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
+            }}
+          ></div>
+        </div>
 
-            {/* Content */}
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-['Poppins'] font-bold mb-4">Ready to Stand Strong?</h2>
-              <p className="text-xl max-w-2xl mx-auto text-blue-100">
-                Join a self-defense class today and empower yourself with confidence and skills.
+        {/* Decorative Elements */}
+        <div className="absolute top-0 left-0 w-40 h-40 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-3xl md:text-5xl font-['Poppins'] font-bold text-white mb-6">
+                Ready to Stand Strong?
+              </h2>
+              <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+                Join a self-defense class today and empower yourself with confidence and skills that last a lifetime.
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button
+
+              <div className="space-y-4 mb-8">
+                {[
+                  "Expert instructors with real-world experience",
+                  "Classes for all skill levels and ages",
+                  "Supportive and inclusive learning environment",
+                  "Practical techniques you can use immediately",
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    className="flex items-start"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.1 + 0.3 }}
+                  >
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="p-1 bg-white/20 rounded-full">
+                        <FiCheck className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                    <p className="ml-3 text-blue-100">{item}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <motion.button
                   onClick={scrollToCities}
-                  className="px-8 py-3.5 bg-white text-[#0D47A1] font-['Poppins'] font-semibold rounded-lg shadow-lg hover:bg-[#64B5F6] hover:text-white transition-all duration-300 w-full sm:w-auto transform hover:scale-105"
+                  className="px-8 py-3.5 bg-white text-[#0D47A1] font-['Poppins'] font-semibold rounded-lg shadow-lg hover:bg-[#64B5F6] hover:text-white transition-all duration-300"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   Browse Classes
-                </button>
-                <Link
-                  to="/register"
-                  className="px-8 py-3.5 border-2 border-white text-white font-['Poppins'] font-semibold rounded-lg hover:bg-white hover:text-[#0D47A1] transition-all duration-300 w-full sm:w-auto transform hover:scale-105"
-                >
-                  Sign Up
-                </Link>
+                </motion.button>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                  <Link
+                    to="/register"
+                    className="px-8 py-3.5 border-2 border-white text-white font-['Poppins'] font-semibold rounded-lg hover:bg-white hover:text-[#0D47A1] transition-all duration-300 inline-block text-center"
+                  >
+                    Sign Up
+                  </Link>
+                </motion.div>
               </div>
+            </motion.div>
 
-              {/* Decorative Icon */}
-              <div className="mt-8 flex justify-center">
-                <div className="inline-flex items-center text-blue-200">
-                  <FiHeart className="h-5 w-5 mr-2" />
-                  <span>Join our community today</span>
+            {/* Right Column - Image */}
+            <motion.div
+              className="hidden lg:block"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="relative">
+                <div className="absolute -top-6 -left-6 w-full h-full border-2 border-white/30 rounded-2xl"></div>
+                <div className="rounded-2xl overflow-hidden shadow-2xl">
+                  <img
+                    src={actionShot2 || "/placeholder.svg"}
+                    alt="Stand Strong Class"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
+
+                {/* Floating Card */}
+                <motion.div
+                  className="absolute -bottom-8 -right-8 bg-white rounded-xl p-4 shadow-xl max-w-xs"
+                  initial={{ y: 20, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <div className="flex items-center">
+                    <div className="p-2 bg-[#64B5F6]/20 rounded-full mr-3">
+                      <FiClock className="h-5 w-5 text-[#0D47A1]" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-800">Classes Starting Soon</h4>
+                      <p className="text-sm text-gray-500">Don't miss out on our upcoming sessions</p>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
     </div>
