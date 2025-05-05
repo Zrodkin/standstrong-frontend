@@ -1,10 +1,9 @@
-"use client"
-
 import { useState, useRef, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import CityImage from '../components/CityImage';
 import { preloadCityImages } from '../utils/imagePreloader';
+import { observeElement, getVisibleElementIds } from '../utils/ImageObserver';
 
 // --- Import Hero image ---
 import heroImageFromFile from "../assets/class-hero-image.jpeg"
@@ -110,10 +109,91 @@ const stats = [
   { value: "100%", label: "Confidence Boost" },
 ]
 
+// Enhanced CitiesGrid component for optimized image loading
+const CitiesGrid = ({ cities }) => {
+  const [visibleCityIds, setVisibleCityIds] = useState([]);
+
+  useEffect(() => {
+    // Setup a timer to periodically check which cities are visible
+    const updateTimer = setInterval(() => {
+      const visibleIds = getVisibleElementIds();
+      setVisibleCityIds(visibleIds);
+    }, 500); // Check every half second
+
+    return () => {
+      clearInterval(updateTimer);
+    };
+  }, []);
+
+  // When visible cities change, update the preloading priorities
+  useEffect(() => {
+    if (cities.length > 0 && visibleCityIds.length > 0) {
+      // Prioritize visible cities when preloading
+      preloadCityImages(cities, visibleCityIds);
+    }
+  }, [cities, visibleCityIds]);
+
+  return (
+    <motion.div
+      className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 text-center"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1 }}
+    >
+      {cities.map((city) => (
+        <motion.div
+          key={city._id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 * cities.indexOf(city) }}
+          className="mb-2 sm:mb-0"
+          data-city-id={city._id}
+          ref={(el) => {
+            if (el) {
+              observeElement(el, {
+                onVisible: () => {
+                  // When this city becomes visible, update our state
+                  setVisibleCityIds(prev =>
+                    prev.includes(city._id) ? prev : [...prev, city._id]
+                  );
+                },
+                onHidden: () => {
+                  // When this city is no longer visible, update our state
+                  setVisibleCityIds(prev =>
+                    prev.filter(id => id !== city._id)
+                  );
+                }
+              });
+            }
+          }}
+        >
+          <Link to={`/classes?city=${city.name}`} className="block group">
+            <div className="overflow-hidden rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CityImage
+                city={city}
+                cityImageMap={cityImageMap}
+                defaultCityImage={defaultCityImage}
+                className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <p className="mt-1 sm:mt-2 font-semibold text-sm sm:text-base md:text-lg text-gray-900">
+              {city.name}
+            </p>
+            <div className="flex items-center justify-center mt-0.5 sm:mt-1">
+              <span className="text-xs text-indigo-600 font-medium mr-1">Classes</span>
+              <FiChevronRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-indigo-600 group-hover:translate-x-1 transition-transform duration-300" />
+            </div>
+          </Link>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+};
+
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState("about")
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const citiesSectionRef = useRef(null)
+  const cityContainerRef = useRef(null) // New ref for the cities container
   const location = useLocation()
 
   // Handle scroll to cities section when hash changes
@@ -170,7 +250,8 @@ const HomePage = () => {
   }
 
   const { cities } = useClasses();
-  // Preload images when cities are loaded
+
+  // Initial preload of all city images when cities are loaded
   useEffect(() => {
     if (cities.length > 0) {
       preloadCityImages(cities);
@@ -198,9 +279,9 @@ const HomePage = () => {
         {/* Content container */}
         <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4 sm:px-6">
           {/* Visibly hidden h1 for SEO */}
-<h1 className="sr-only">
-  Stand Strong – Empowering Jewish communities through self-defense and leadership
-</h1>
+          <h1 className="sr-only">
+            Stand Strong – Empowering Jewish communities through self-defense and leadership
+          </h1>
           {/* Logo with motion */}
           <motion.div variants={heroItemVariants(0)} initial="hidden" animate="visible">
             <img src={siteLogo || "/placeholder.svg"} alt="Stand Strong Logo" className="h-14 sm:h-16 md:h-20 w-auto" />
@@ -230,7 +311,7 @@ const HomePage = () => {
 
       {/* === Cities Grid with Enhanced Mobile Responsiveness === */}
       <section id="cities-section" className="py-8 sm:py-12 md:py-16 bg-gray-50" ref={citiesSectionRef}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8" ref={cityContainerRef}>
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -245,45 +326,15 @@ const HomePage = () => {
             </motion.div>
           </div>
 
-          <motion.div
-            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 text-center"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-          >
-            {cities.map((city) => (
-              <motion.div
-                key={city._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 * cities.indexOf(city) }}
-                className="mb-2 sm:mb-0"
-              >
-                <Link to={`/classes?city=${city.name}`} className="block group">
-                <div className="overflow-hidden rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <CityImage
-              city={city}
-              cityImageMap={cityImageMap}
-              defaultCityImage={defaultCityImage}
-              className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          </div>
-                  <p className="mt-1 sm:mt-2 font-semibold text-sm sm:text-base md:text-lg text-gray-900">
-                    {city.name}
-                  </p>
-                  <div className="flex items-center justify-center mt-0.5 sm:mt-1">
-                    <span className="text-xs text-indigo-600 font-medium mr-1">Classes</span>
-                    <FiChevronRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-indigo-600 group-hover:translate-x-1 transition-transform duration-300" />
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
+          {/* Replace the old cities grid with the new optimized CitiesGrid component */}
+          <CitiesGrid cities={cities} />
         </div>
       </section>
 
+      {/* The rest of the components remain unchanged */}
       {/* === Stats Section (NEW) === */}
       <section
-        className="py-16 text-white" // Removed the pb-24
+        className="py-16 text-white"
         style={{
           background:
             "linear-gradient(90deg, rgba(21, 111, 176, 1) 0%, rgba(97, 174, 199, 1) 30%, rgba(97, 174, 199, 1) 70%, rgba(21, 111, 176, 1) 100%)",
@@ -360,21 +411,19 @@ const HomePage = () => {
           <div className="flex justify-center space-x-4 mb-10">
             <button
               onClick={() => setActiveTab("about")}
-              className={`px-6 py-3 rounded-lg font-['Poppins'] font-semibold transition-all duration-300 text-base ${
-                activeTab === "about"
+              className={`px-6 py-3 rounded-lg font-['Poppins'] font-semibold transition-all duration-300 text-base ${activeTab === "about"
                   ? "bg-[#0D47A1] text-white shadow-lg"
                   : "bg-white text-[#0D47A1] hover:bg-[#64B5F6]/10"
-              }`}
+                }`}
             >
               About Us
             </button>
             <button
               onClick={() => setActiveTab("story")}
-              className={`px-6 py-3 rounded-lg font-['Poppins'] font-semibold transition-all duration-300 text-base ${
-                activeTab === "story"
+              className={`px-6 py-3 rounded-lg font-['Poppins'] font-semibold transition-all duration-300 text-base ${activeTab === "story"
                   ? "bg-[#0D47A1] text-white shadow-lg"
                   : "bg-white text-[#0D47A1] hover:bg-[#64B5F6]/10"
-              }`}
+                }`}
             >
               Our Story
             </button>
