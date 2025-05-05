@@ -3,17 +3,15 @@
 import { useState, useRef, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
+import CityImage from '../components/CityImage';
+import { preloadCityImages } from '../utils/imagePreloader';
 
 // --- Import Hero image ---
 import heroImageFromFile from "../assets/class-hero-image.jpeg"
 const heroBackgroundImage = heroImageFromFile
 
 // --- Import City images ---
-import bostonImage from "../assets/boston-skyline.jpeg"
-import chicagoImage from "../assets/chicago-skyline.jpeg"
-import laImage from "../assets/la-skyline.jpeg"
-import newyorkImage from "../assets/newyork-skyline.jpeg"
-import lasvegasImage from "../assets/lasvegas-skyline.jpeg"
+import { cityImageMap, defaultCityImage } from '../constants/cityImages';
 
 // --- Import Gallery images ---
 import actionShot1 from "../assets/class-action-shot1.jpeg"
@@ -42,14 +40,7 @@ import { FaStarOfDavid } from "react-icons/fa"
 import { useClasses } from "../context/ClassContext"
 import getFullImageUrl from "../utils/getFullImageUrl"
 
-const cityImageMap = {
-  Boston: bostonImage,
-  "New York": newyorkImage,
-  Chicago: chicagoImage,
-  "Los Angeles": laImage,
-  "Las Vegas": lasvegasImage,
-}
-const defaultCityImage = "/img/placeholder-city.jpg"
+
 const galleryImages = [actionShot1, actionShot2, actionShot3]
 
 const aboutFeatures = [
@@ -178,7 +169,13 @@ const HomePage = () => {
     exit: { opacity: 0, y: -10, transition: { duration: 0.3 } },
   }
 
-  const { cities } = useClasses()
+  const { cities } = useClasses();
+  // Preload images when cities are loaded
+  useEffect(() => {
+    if (cities.length > 0) {
+      preloadCityImages(cities);
+    }
+  }, [cities]);
 
   return (
     <div>
@@ -262,18 +259,14 @@ const HomePage = () => {
                 className="mb-2 sm:mb-0"
               >
                 <Link to={`/classes?city=${city.name}`} className="block group">
-                  <div className="overflow-hidden rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <img
-                      src={getFullImageUrl(city.imageUrl) || cityImageMap[city.name] || defaultCityImage}
-                      alt={`${city.name} skyline`}
-                      className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="eager"
-                      onError={(e) => {
-                        e.target.onerror = null
-                        e.target.src = defaultCityImage
-                      }}
-                    />
-                  </div>
+                <div className="overflow-hidden rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CityImage
+              city={city}
+              cityImageMap={cityImageMap}
+              defaultCityImage={defaultCityImage}
+              className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
                   <p className="mt-1 sm:mt-2 font-semibold text-sm sm:text-base md:text-lg text-gray-900">
                     {city.name}
                   </p>
