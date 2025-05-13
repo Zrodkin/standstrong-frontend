@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FiCalendar, FiMapPin, FiClock, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { format } from 'date-fns';
-import { getClassById } from '../../services/classService';
-import { getClassAttendance, checkInStudent } from '../../services/attendanceService';
-import { useAuth } from '../../context/AuthContext';
+import { getClassById } from '/src/services/classService.js';
+import { getClassAttendance, checkInStudent } from '/src/services/attendanceService.js';
+import { useAuth } from "../../context/AuthContext.jsx";
 
 const CheckInPage = () => {
   const { id } = useParams(); // Class ID

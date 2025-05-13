@@ -11,9 +11,10 @@ import {
   FiBarChart2,
   FiPlusCircle
 } from 'react-icons/fi';
-import { getClasses } from '../../services/classService';
-import { getUsers } from '../../services/authService';
+import { getClasses } from '/src/services/classService.js';
+import { getUsers } from '/src/services/userService.js'; // Use userService here!
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
 
 const AdminDashboardPage = () => {
   const [loading, setLoading] = useState(true);
@@ -31,7 +32,6 @@ const AdminDashboardPage = () => {
     genderDistribution: { male: 0, female: 0, nonBinary: 0, undisclosed: 0 }
   });
 
-  // Demo chart data (to be replaced with real data)
   const [enrollmentData, setEnrollmentData] = useState([]);
 
   useEffect(() => {
@@ -39,19 +39,19 @@ const AdminDashboardPage = () => {
       try {
         setLoading(true);
         setError(null);
-
-        const [classes, users] = await Promise.all([
+    
+        const [classes, usersResponse] = await Promise.all([
           getClasses(),
           getUsers()
         ]);
-
+    
+        // Extract the users array from the response object
+        const users = Array.isArray(usersResponse.users) ? usersResponse.users : [];
+    
         setClassesData(classes);
-        setUsersData(users);
-
-        // Calculate dashboard statistics
-        calculateStats(classes, users);
-
-        // Generate dummy enrollment data for chart (would be real data in production)
+        setUsersData(usersResponse); // You might want to set the entire response or just users
+    
+        calculateStats(classes, users); // Pass the users array, not the response object
         generateEnrollmentData(classes);
       } catch (err) {
         setError('Failed to load dashboard data. Please try again later.');
@@ -65,29 +65,28 @@ const AdminDashboardPage = () => {
   }, []);
 
   const calculateStats = (classes, users) => {
-    // Count students (non-admin users)
     const students = users.filter(user => user.role === 'student');
-    
-    // Count total revenue and capacity
-    const totalRevenue = classes.reduce((sum, cls) => sum + (cls.cost * cls.registeredStudents.length), 0);
-    const totalCapacity = classes.reduce((sum, cls) => sum + cls.capacity, 0);
-    const totalEnrolled = classes.reduce((sum, cls) => sum + cls.registeredStudents.length, 0);
-    
-    // Count class types
+
+    const totalEnrolled = classes.reduce((sum, cls) => sum + (cls.registrationCount || 0), 0);
+
+    const totalRevenue = classes.reduce((sum, cls) => {
+      return sum + (cls.cost || 0) * (cls.registrationCount || 0);
+    }, 0);
+
+    const totalCapacity = classes.reduce((sum, cls) => sum + (cls.capacity || 0), 0);
+
     const oneTimeClasses = classes.filter(cls => cls.type === 'one-time').length;
     const ongoingClasses = classes.filter(cls => cls.type === 'ongoing').length;
-    
-    // Get unique cities
-    const cities = [...new Set(classes.map(cls => cls.city))];
-    
-    // Gender distribution
+
+    const cities = [...new Set(classes.map(cls => cls.city).filter(Boolean))];
+
     const genderCounts = {
       male: students.filter(student => student.gender === 'male').length,
       female: students.filter(student => student.gender === 'female').length,
       nonBinary: students.filter(student => student.gender === 'non-binary').length,
       undisclosed: students.filter(student => student.gender === 'prefer not to say').length
     };
-    
+
     setStats({
       totalClasses: classes.length,
       totalStudents: students.length,
@@ -99,26 +98,22 @@ const AdminDashboardPage = () => {
       genderDistribution: genderCounts
     });
   };
-
   const generateEnrollmentData = (classes) => {
-    // This would be replaced with real data in a production app
-    // For demo, we'll create enrollment data for the last 7 days
     const today = new Date();
     const data = [];
-    
+
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      
-      // Simulate some random enrollments
+
       const newEnrollments = Math.floor(Math.random() * 10);
-      
+
       data.push({
         date: date.toLocaleDateString(),
         enrollments: newEnrollments
       });
     }
-    
+
     setEnrollmentData(data);
   };
 
@@ -189,7 +184,6 @@ const AdminDashboardPage = () => {
             </div>
           </div>
         </div>
-
         {/* Total Students */}
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
@@ -289,31 +283,25 @@ const AdminDashboardPage = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={enrollmentData}
-                margin={{
-                  top: 20,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="enrollments" 
+                <Line
+                  type="monotone"
+                  dataKey="enrollments"
                   name="New Enrollments"
-                  stroke="#3B82F6" 
-                  activeDot={{ r: 8 }} 
+                  stroke="#3B82F6"
+                  activeDot={{ r: 8 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
-
       {/* City & Class Type Distribution */}
       <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
         {/* Cities */}
@@ -418,14 +406,14 @@ const AdminDashboardPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {classesData.slice(0, 5).map((cls) => (
+            {classesData.slice(0, 5).map((cls) => (
                 <tr key={cls._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{cls.title}</div>
-                    <div className="text-sm text-gray-500">{cls.instructor.name}</div>
+                    <div className="text-sm font-medium text-gray-900">{cls.title || 'Untitled Class'}</div>
+                    <div className="text-sm text-gray-500">{cls.instructor?.name || 'Unknown Instructor'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{cls.city}</div>
+                    <div className="text-sm text-gray-900">{cls.city || 'No Location'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -438,19 +426,19 @@ const AdminDashboardPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {cls.registeredStudents.length}/{cls.capacity}
+                      {(cls.registrationCount || 0)}/{cls.capacity || 0}
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
                       <div 
                         className="bg-primary-600 h-2.5 rounded-full" 
                         style={{ 
-                          width: `${(cls.registeredStudents.length / cls.capacity) * 100}%` 
+                          width: `${cls.capacity ? ((cls.registrationCount || 0) / cls.capacity) * 100 : 0}%` 
                         }}
                       ></div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${cls.cost}
+                    ${cls.cost || 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link to={`/admin/classes/edit/${cls._id}`} className="text-primary-600 hover:text-primary-900 mr-4">

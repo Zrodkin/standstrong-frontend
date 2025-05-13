@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ClassProvider } from './context/ClassContext';
 import { AttendanceProvider } from './context/AttendanceContext';
+import { Analytics } from "@vercel/analytics/react"
 
 // Layouts
 import MainLayout from './Layouts/MainLayout';
@@ -31,6 +32,10 @@ import AdminClassFormPage from './pages/admin/ClassFormPage';
 import AdminStudentsPage from './pages/admin/StudentsPage';
 import AdminAttendancePage from './pages/admin/AttendancePage';
 import AdminSettingsPage from './pages/admin/SettingsPage';
+import AdminCityFormPage from './pages/admin/AdminCityFormPage';
+import AdminCitiesPage from './pages/admin/AdminCitiesPage';
+import AdminCityEditPage from './pages/admin/AdminCityEditPage.jsx';
+import AdminRegistrationsPage from './pages/admin/RegistrationsPage';
 
 // Error boundary component
 class ErrorBoundary extends React.Component {
@@ -231,8 +236,14 @@ const AppRoutes = () => {
           <Route path="classes/edit/:id" element={<AdminClassFormPage />} />
           <Route path="students" element={<AdminStudentsPage />} />
           <Route path="attendance" element={<AdminAttendancePage />} />
+          <Route path="registrations" element={<AdminRegistrationsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="cities/new" element={<AdminCityFormPage />} />
+          <Route path="cities" element={<AdminCitiesPage />} />
+          <Route path="cities/edit/:id" element={<AdminCityEditPage />} />
         </Route>
+
+       
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" />} />
@@ -261,6 +272,7 @@ function App() {
           </AuthProvider>
         </ErrorBoundary>
       </Router>
+      <Analytics />
     </>
   );
 }

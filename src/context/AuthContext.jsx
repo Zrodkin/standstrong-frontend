@@ -1,7 +1,6 @@
 // frontend/src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
-import { getCurrentUser, isAuthenticated, login, logout, register, updateProfile } from '../services/authService';
-
+import { getCurrentUser, getUserProfile, isAuthenticated, login, logout, register, updateProfile } from '../services/authService';
 const AuthContext = createContext(null);
 
 // Export the provider component
@@ -67,6 +66,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshCurrentUser = async () => {
+    try {
+      console.log("Starting refreshCurrentUser...");
+      setLoading(true);
+      setError(null);
+      
+      // Get updated user profile from API
+      const userData = await getUserProfile();
+      console.log("Received updated user data:", userData);
+      
+    
+      // Explicitly update localStorage with full user data including registeredClasses
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      setCurrentUser(userData);
+      return userData;
+    } catch (err) {
+      console.error("Error in refreshCurrentUser:", err);
+      setError(err.response?.data?.message || 'Failed to refresh user data');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     currentUser,
     loading,
@@ -77,6 +101,7 @@ export const AuthProvider = ({ children }) => {
     loginUser,
     logoutUser,
     updateUserProfile,
+    refreshCurrentUser,
   };
 
   return (

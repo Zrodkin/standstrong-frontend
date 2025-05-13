@@ -5,11 +5,13 @@ import {
   getClassById, 
   createClass, 
   updateClass, 
-  deleteClass, 
-  registerForClass, 
-  getAllCities, 
+  deleteClass,  
   getClassesByCity 
 } from '../services/classService';
+
+import { getAllCityRecords } from '../services/cityService';
+
+
 
 const ClassContext = createContext(null);
 
@@ -20,13 +22,14 @@ export const ClassProvider = ({ children }) => {
   const [selectedCity, setSelectedCity] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+ 
 
   // Get all cities on mount
   useEffect(() => {
     const fetchCities = async () => {
       try {
         setLoading(true);
-        const citiesData = await getAllCities();
+        const citiesData = await getAllCityRecords(); // ✅ correct service
         setCities(citiesData);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch cities');
@@ -116,21 +119,7 @@ export const ClassProvider = ({ children }) => {
     }
   };
 
-  // Register for a class
-  const registerClass = async (classId) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await registerForClass(classId);
-      // You might want to update the class or user data here
-      return true;
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to register for class');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   // Fetch classes by city
   const fetchClassesByCity = async (city) => {
@@ -160,10 +149,10 @@ export const ClassProvider = ({ children }) => {
     addClass,
     editClass,
     removeClass,
-    registerClass,
     fetchClassesByCity,
     setSelectedCity,
   };
+  
 
   return (
     <ClassContext.Provider value={value}>
@@ -171,6 +160,7 @@ export const ClassProvider = ({ children }) => {
     </ClassContext.Provider>
   );
 };
+
 
 // Export the hook as a named function declaration instead of an arrow function
 export function useClasses() {
