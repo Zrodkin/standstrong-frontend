@@ -1,16 +1,16 @@
 import { useState, useRef, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import CityImage from '../components/CityImage';
-import { preloadCityImages } from '../utils/imagePreloader';
-import { observeElement, getVisibleElementIds } from '../utils/ImageObserver';
+//import CityImage from '../components/CityImage';
+//import { preloadCityImages } from '../utils/imagePreloader';
+//import { observeElement, getVisibleElementIds } from '../utils/ImageObserver';
 
 // --- Import Hero image ---
 import heroImageFromFile from "../assets/class-hero-image.jpeg"
 const heroBackgroundImage = heroImageFromFile
 
 // --- Import City images ---
-import { cityImageMap, defaultCityImage } from '../constants/cityImages';
+import { staticCities } from '../constants/cityImages';
 
 // --- Import Gallery images ---
 import actionShot1 from "../assets/class-action-shot1.jpeg"
@@ -36,8 +36,8 @@ import {
 
 import { FaStarOfDavid } from "react-icons/fa"
 
-import { useClasses } from "../context/ClassContext"
-import getFullImageUrl from "../utils/getFullImageUrl"
+//import { useClasses } from "../context/ClassContext"
+//import getFullImageUrl from "../utils/getFullImageUrl"
 
 
 const galleryImages = [actionShot1, actionShot2, actionShot3]
@@ -109,70 +109,30 @@ const stats = [
   { value: "100%", label: "Confidence Boost" },
 ]
 
-// Enhanced CitiesGrid component for optimized image loading
-const CitiesGrid = ({ cities }) => {
-  const [visibleCityIds, setVisibleCityIds] = useState([]);
-
-  useEffect(() => {
-    // Setup a timer to periodically check which cities are visible
-    const updateTimer = setInterval(() => {
-      const visibleIds = getVisibleElementIds();
-      setVisibleCityIds(visibleIds);
-    }, 500); // Check every half second
-
-    return () => {
-      clearInterval(updateTimer);
-    };
-  }, []);
-
-  // When visible cities change, update the preloading priorities
-  useEffect(() => {
-    if (cities.length > 0 && visibleCityIds.length > 0) {
-      // Prioritize visible cities when preloading
-      preloadCityImages(cities, visibleCityIds);
-    }
-  }, [cities, visibleCityIds]);
-
+// Simple CitiesGrid component using static images
+const CitiesGrid = () => {
   return (
     <motion.div
       className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 text-center"
-      initial={{ opacity: 1 }}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
-      {cities.map((city) => (
+      {staticCities.map((city, index) => (
         <motion.div
-          key={city._id}
+          key={city.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 * cities.indexOf(city) }}
+          transition={{ duration: 0.3, delay: 0.1 * index }}
           className="mb-2 sm:mb-0"
-          data-city-id={city._id}
-          ref={(el) => {
-            if (el) {
-              observeElement(el, {
-                onVisible: () => {
-                  // When this city becomes visible, update our state
-                  setVisibleCityIds(prev =>
-                    prev.includes(city._id) ? prev : [...prev, city._id]
-                  );
-                },
-                onHidden: () => {
-                  // When this city is no longer visible, update our state
-                  setVisibleCityIds(prev =>
-                    prev.filter(id => id !== city._id)
-                  );
-                }
-              });
-            }
-          }}
         >
           <Link to={`/classes?city=${city.name}`} className="block group">
             <div className="overflow-hidden rounded-lg sm:rounded-xl shadow-md sm:shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CityImage
-                city={city}
-                cityImageMap={cityImageMap}
-                defaultCityImage={defaultCityImage}
+              <img
+                src={city.image}
+                alt={`${city.name} skyline`}
                 className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
               />
             </div>
             <p className="mt-1 sm:mt-2 font-semibold text-sm sm:text-base md:text-lg text-gray-900">
@@ -249,14 +209,14 @@ const HomePage = () => {
     exit: { opacity: 0, y: -10, transition: { duration: 0.3 } },
   }
 
-  const { cities } = useClasses();
+  //const { cities } = useClasses();
 
   // Initial preload of all city images when cities are loaded
-  useEffect(() => {
-    if (cities.length > 0) {
-      preloadCityImages(cities);
-    }
-  }, [cities]);
+  //useEffect(() => {
+   // if (cities.length > 0) {
+    //  preloadCityImages(cities);
+   // }
+  //}, [cities]);
 
   return (
     <div>
@@ -327,7 +287,7 @@ const HomePage = () => {
           </div>
 
           {/* Replace the old cities grid with the new optimized CitiesGrid component */}
-          <CitiesGrid cities={cities} />
+         <CitiesGrid />
         </div>
       </section>
 
