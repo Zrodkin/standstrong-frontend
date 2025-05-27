@@ -241,34 +241,7 @@ const ClassDetailPage = () => {
   }, [isTabMenuOpen]);
 
   // --- Image Helpers ---
-  const getFullImageUrl = (partialUrl, type = 'image') => {
-    if (!partialUrl) return "/placeholder.svg";
-  
-    // If it's already a full URL, return it
-    if (partialUrl.startsWith("http")) return partialUrl;
-  
-    // Check if the path already contains the folder name
-    if (partialUrl.includes('partner-logos')) {
-      type = 'logo';
-    } else if (partialUrl.includes('class-images')) {
-      type = 'image';
-    }
-  
-    // Extract filename - get the last part of the path
-    const filename = partialUrl.split("/").pop();
-    
-    // Determine folder based on type
-    const folder = type === 'logo' ? 'partner-logos' : 'class-images';
-  
-    // In development, always use the backend URL
-    if (window.location.hostname === "localhost") {
-      const apiBaseUrl = import.meta.env.VITE_API_URL;
-      return `${apiBaseUrl}/uploads/${folder}/${filename}`;
-    }
-  
-    // In production, use the relative path
-    return `/uploads/${folder}/${filename}`;
-  };
+ 
 
   const handleImageError = (e) => {
     console.warn("Failed to load image:", e.target.src)
@@ -496,13 +469,12 @@ const ClassDetailPage = () => {
               )}
             </div>
 
-            {classData.partnerLogo && (
+           {classData.partnerLogo && (
   <div className="bg-white p-3 rounded-xl shadow-xl max-h-24 mt-6">
     <img
-      src={getFullImageUrl(classData.partnerLogo, 'logo') || "/placeholder.svg"} // Add 'logo' here
+      src={classData.partnerLogo}
       alt={`${classData.partnerName || "Partner"} Logo`}
       className="h-16 sm:h-20 object-contain"
-      onError={handleImageError}
     />
   </div>
 )}
@@ -653,11 +625,10 @@ const ClassDetailPage = () => {
             </button>
             {/* Image inside Modal */}
             <img 
-              src={getFullImageUrl(classData.imageUrl, 'image')} 
-              alt={`${classData.title} flyer - Full view`} 
-              // Style to fit within viewport
-              className="block max-w-[90vw] max-h-[90vh] object-contain rounded-md shadow-lg" 
-            />
+  src={classData.imageUrl} 
+  alt={`${classData.title} flyer - Full view`} 
+  className="block max-w-[90vw] max-h-[90vh] object-contain rounded-md shadow-lg" 
+/>
           </div>
         </div>
       )}

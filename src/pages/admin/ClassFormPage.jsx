@@ -25,39 +25,9 @@ import { getClassById, createClass, updateClass, deleteClass } from "/src/servic
 import api from "/src/services/api.js"
 import { useClasses } from "/src/context/ClassContext.jsx"
 import PlacesAutocompleteInput from "/src/components/PlacesAutocompleteInput.jsx"
-const SERVER_BASE_URL = "https://standstrong.onrender.com"
 
-// Helper function to construct full URL from relative path
-const constructFullUrl = (relativePath) => {
-  if (!relativePath || typeof relativePath !== "string" || !relativePath.startsWith("/")) {
-    // Return empty or original if it's not a valid relative path starting with '/'
-    // or if it already seems like a full URL
-    if (typeof relativePath === "string" && (relativePath.startsWith("http") || relativePath.startsWith("data:"))) {
-      return relativePath
-    }
-    return ""
-  }
-  // Prepend the server base URL
-  return `${SERVER_BASE_URL}${relativePath}`
-}
 
-// Helper function to get relative path from potentially full URL
-const getRelativePath = (fullUrl) => {
-  if (!fullUrl || typeof fullUrl !== "string") return ""
-  // Check if it starts with the known base URL and remove it
-  if (fullUrl.startsWith(SERVER_BASE_URL)) {
-    const path = fullUrl.substring(SERVER_BASE_URL.length)
-    // Ensure it starts with a slash
-    return path.startsWith("/") ? path : `/${path}`
-  }
-  // If it doesn't start with the base URL but looks like a relative path, return it
-  if (fullUrl.startsWith("/")) {
-    return fullUrl
-  }
-  // Otherwise, we cannot reliably determine the relative path
-  console.warn("Could not determine relative path for:", fullUrl)
-  return fullUrl // Return original as fallback, might cause issues if backend expects relative
-}
+
 
 const ClassFormPage = () => {
   const { cities } = useClasses()
@@ -236,73 +206,65 @@ const ClassFormPage = () => {
   }, [id, isEditMode]) // Keep dependencies as they are
 
   const uploadPartnerLogo = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
+  const file = e.target.files[0]
+  if (!file) return
 
-    const formDataUpload = new FormData()
-    formDataUpload.append("file", file)
+  const formDataUpload = new FormData()
+  formDataUpload.append("file", file)
 
-    try {
-      setUploadingLogo(true)
-      setError(null)
-      const { data } = await api.post("/upload?type=logo", formDataUpload, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
+  try {
+    setUploadingLogo(true)
+    setError(null)
+    
+    const { data } = await api.post("/upload?type=logo", formDataUpload, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
 
-      const uploadedRelativePath = data.filePath || data.path || ""
-      const fullLogoUrlAfterUpload = constructFullUrl(uploadedRelativePath)
-
-      // Set state with log inside (using explicit return)
-      setFormData((prev) => {
-        return {
-          // Use explicit return
-          ...prev,
-          partnerLogo: fullLogoUrlAfterUpload,
-        }
-      })
-      setSuccess("Logo uploaded successfully!")
-    } catch (err) {
-      console.error("Failed to upload logo:", err)
-      setError("Logo upload failed. Please try again.")
-    } finally {
-      setUploadingLogo(false)
-    }
+    // Store the Cloudinary URL directly
+    setFormData((prev) => ({
+      ...prev,
+      partnerLogo: data.url,
+    }))
+    
+    setSuccess("Logo uploaded successfully!")
+  } catch (err) {
+    console.error("Failed to upload logo:", err)
+    setError("Logo upload failed. Please try again.")
+  } finally {
+    setUploadingLogo(false)
   }
+}
 
   const uploadClassImage = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-  
-    const formDataUpload = new FormData()
-    formDataUpload.append("file", file)
-  
-    try {
-      setUploadingImage(true)
-      setError(null)
-      // Add the type parameter to the URL
-      const { data } = await api.post("/upload?type=image", formDataUpload, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-  
-      const uploadedRelativePath = data.filePath || data.path || ""
-      const fullImageUrlAfterUpload = constructFullUrl(uploadedRelativePath)
-  
-      // Set state with log inside
-      setFormData((prev) => {
-        return {
-          ...prev,
-          imageUrl: uploadedRelativePath, // Store the relative path instead of the full URL
-        }
-      })
-      setImagePreview(fullImageUrlAfterUpload)
-      setSuccess("Image uploaded successfully!")
-    } catch (err) {
-      console.error("Failed to upload image:", err)
-      setError("Image upload failed. Please try again.")
-    } finally {
-      setUploadingImage(false)
-    }
+  const file = e.target.files[0]
+  if (!file) return
+
+  const formDataUpload = new FormData()
+  formDataUpload.append("file", file)
+
+  try {
+    setUploadingImage(true)
+    setError(null)
+    
+    const { data } = await api.post("/upload?type=flyer", formDataUpload, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+
+    // Store the Cloudinary URL directly
+    setFormData((prev) => ({
+      ...prev,
+      imageUrl: data.url,
+    }))
+    
+    setImagePreview(data.url)
+    setSuccess("Image uploaded successfully!")
+  } catch (err) {
+    console.error("Failed to upload image:", err)
+    setError("Image upload failed. Please try again.")
+  } finally {
+    setUploadingImage(false)
   }
+}
 
   // Handle input changes
   const handleChange = (e) => {
@@ -538,76 +500,66 @@ const ClassFormPage = () => {
   }
 
   // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError(null) // Clear previous errors
-    setSuccess(null)
+ // Handle form submission
+const handleSubmit = async (e) => {
+  e.preventDefault()
+  setError(null) // Clear previous errors
+  setSuccess(null)
 
-    // Basic validation
-    if (!formData.title || !formData.city || !formData.location?.address || !formData.instructor?.name) {
-      setError("Please fill out all required fields: Title, City, Address, Instructor Name.")
-      return
-    }
-    if (
-      !formData.schedule ||
-      formData.schedule.length === 0 ||
-      !formData.schedule[0].date ||
-      !formData.schedule[0].startTime ||
-      !formData.schedule[0].endTime
-    ) {
-      setError("Please add at least one valid schedule entry (Date, Start Time, End Time).")
-      return
-    }
-    // Add more specific validation as needed
-
-    try {
-      setLoading(true)
-
-      // --- Convert logo URL back to relative path for backend ---
-      const relativeLogoPathToSend = getRelativePath(formData.partnerLogo) // Use helper
-      const relativeImagePathToSend = getRelativePath(formData.imageUrl);
-
-      // Prepare data for submission
-      const formattedData = {
-        ...formData, // Spread other data first
-        // --- Use the relative path expected by the backend ---
-        partnerLogo: relativeLogoPathToSend, // Explicitly use the converted path
-        imageUrl: relativeImagePathToSend,
-
-        // --- End Use Relative Path ---
-        // Ensure numeric fields are numbers
-        cost: Number.parseFloat(formData.cost) || 0,
-        capacity: Number.parseInt(formData.capacity) || 0,
-        targetAgeRange: {
-          min: Number.parseInt(formData.targetAgeRange.min) || 0,
-          max: hasMaxAge && formData.targetAgeRange.max ? Number.parseInt(formData.targetAgeRange.max) : undefined,
-        },
-      }
-
-      // Remove max age if checkbox is unchecked
-      if (!hasMaxAge) {
-        formattedData.targetAgeRange.max = undefined
-      }
-      // Remove external link if registration is internal
-      if (formData.registrationType === "internal") {
-        formattedData.externalRegistrationLink = undefined
-      }
-
-      if (isEditMode) {
-        await updateClass(id, formattedData)
-      } else {
-        await createClass(formattedData)
-      }
-
-      navigate("/admin/classes") // Redirect on success
-    } catch (err) {
-      console.error("Failed to save class:", err)
-      // Provide more specific error if possible (e.g., from err.response.data)
-      setError(err.response?.data?.message || "Failed to save class. An unexpected error occurred.")
-    } finally {
-      setLoading(false)
-    }
+  // Basic validation
+  if (!formData.title || !formData.city || !formData.location?.address || !formData.instructor?.name) {
+    setError("Please fill out all required fields: Title, City, Address, Instructor Name.")
+    return
   }
+  if (
+    !formData.schedule ||
+    formData.schedule.length === 0 ||
+    !formData.schedule[0].date ||
+    !formData.schedule[0].startTime ||
+    !formData.schedule[0].endTime
+  ) {
+    setError("Please add at least one valid schedule entry (Date, Start Time, End Time).")
+    return
+  }
+
+  try {
+    setLoading(true)
+
+    // Prepare data for submission - no URL conversion needed with Cloudinary
+    const formattedData = {
+      ...formData,
+      // Ensure numeric fields are numbers
+      cost: Number.parseFloat(formData.cost) || 0,
+      capacity: Number.parseInt(formData.capacity) || 0,
+      targetAgeRange: {
+        min: Number.parseInt(formData.targetAgeRange.min) || 0,
+        max: hasMaxAge && formData.targetAgeRange.max ? Number.parseInt(formData.targetAgeRange.max) : undefined,
+      },
+    }
+
+    // Remove max age if checkbox is unchecked
+    if (!hasMaxAge) {
+      formattedData.targetAgeRange.max = undefined
+    }
+    // Remove external link if registration is internal
+    if (formData.registrationType === "internal") {
+      formattedData.externalRegistrationLink = undefined
+    }
+
+    if (isEditMode) {
+      await updateClass(id, formattedData)
+    } else {
+      await createClass(formattedData)
+    }
+
+    navigate("/admin/classes") // Redirect on success
+  } catch (err) {
+    console.error("Failed to save class:", err)
+    setError(err.response?.data?.message || "Failed to save class. An unexpected error occurred.")
+  } finally {
+    setLoading(false)
+  }
+}
 
   // Handle delete confirmation
   const handleDeleteConfirm = async () => {
